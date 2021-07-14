@@ -1,0 +1,107 @@
+from importlib import import_module
+import subprocess
+import requests
+import time
+from multiprocessing import Pool as ProcessPool
+from multiprocessing.dummy import Pool as ThreadPool
+
+from utils import ut
+
+
+def get_proxy(local_port):
+    return {
+        'https': f'socks5h://127.0.0.1:{local_port}', # 使用socks5h而不是socks5，可在proxy端dns解析
+        'http': f'socks5h://127.0.0.1:{local_port}'
+    }
+    
+    
+def start_ss(server):
+    args = ['ss-local', '-s', server['addr'], '-p', str(server['port']), '-k', server['pwd'], \
+        '-m', server['method'], '-l', str(server['local_port'])]
+    # logger.info(' '.join(args))
+    proc = subprocess.Popen(args)
+    ut.D(f'启动ss [{server["local_port"]}]：{server["remark"]}')
+    return proc
+
+
+def start_v2ray(server):
+    args = ['v2ray', '-c', server['path']]
+    # logger.info(' '.join(args))
+    proc = subprocess.Popen(args)
+    ut.D(f'启动v2ray [{server["local_port"]}]：{server["remark"]}')
+    return proc
+
+
+def _request_page(server, local_port):
+    resp = None
+    website = ut['website']
+
+    proxy = get_proxy(local_port)
+    try:
+        resp = requests.get(website, stream=True, proxies=proxy, timeout=10)
+        fetch_time = int(resp.elapsed.microseconds/1000)
+
+        #ping_time = ping(server_addr, unit='ms')
+        if resp.status_code == 200:
+            ut.D(f'[√] {server["type"]} {local_port} {server["remark"]} => {website}, status={resp.status_code}, fetch={fetch_time} ms.')
+            return fetch_time
+            # return (fetch_time + ping_time) / 2
+        else:
+            ut.D(f'[×] {server["type"]} {local_port} {server["remark"]} ≠> {website}, status={resp.status_code}, timeout.')
+            return None
+    except (requests.exceptions.ReadTimeout, requests.exceptions.ConnectionError) as ex:
+        ut.D(f'[×] {server["type"]} {local_port} {server["remark"]} ≠> {website}, {ex}')
+        # logger.debug(ex)
+        return None
+    
+    
+def start_client(server):
+    #ut.D(server['type'])
+    if server['type'] == 'ss':
+        proc = start_ss(server)
+    elif server['type'] == 'vmess':
+        proc = start_v2ray(server)
+    time.sleep(1)   # 避免来不及切换proxy而无法请求
+    return proc
+    
+    
+def _test_and_kill(server):
+    proc = start_client(server)
+    try:
+        delay = _request_page(server, server['local_port'])
+        return delay
+    finally:
+        proc.kill()
+        
+        
+def _test_forever(server):
+    start_client(server)
+    while True:
+        _request_page(server, server['local_port'])
+        time.sleep(60)
+        
+        
+def benchmark():
+    for proxy_type in ut['proxy']:
+        proxy_config = ut['proxy'][proxy_type]
+        if 'subscribe' in proxy_config:
+            module = import_module(proxy_type)
+            servers = module.subscribe(proxy_config['subscribe'])
+            #ut.D(servers)
+            configs = module.create_config(proxy_config['config_dir'], servers)
+            #ut.D(configs)
+            ut.D('找到{}个服务节点'.format(len(configs)))
+            if ut['max_client'] == 0: #无限客户端，因此无需退出客户端
+                pool = ThreadPool(len(configs))
+                server_info = pool.map(_test_forever, configs.values())
+                pool.close()
+                pool.join()
+            else:
+                pool = ThreadPool(ut['max_client'])
+                server_info = pool.map(_test_and_kill, configs.values())
+                pool.close()
+                pool.join()
+
+
+if __name__ == '__main__':
+    benchmark()

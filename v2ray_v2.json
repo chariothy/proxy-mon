@@ -1,0 +1,49 @@
+{
+  "outbound": {
+    "settings": {
+      "vnext": [
+        {
+          "port": 41002,
+          "users": [
+            {
+              "id": "653d5ad4-0a6c-314-98c0-bde5567e22a7",
+              "alterId": 2
+            }
+          ],
+          "address": "aflzz-hk.yixueabcdeishu.com"
+        }
+      ]
+    },
+    "protocol": "vmess",
+    "streamSettings": {
+      "network": "ws",
+      "tlsSettings": {
+        "allowInsecure": true
+      },
+      "wsSettings": {
+        "path": "/564dfa20/"
+      },
+      "security": "tls"
+    }
+  },
+  "log": {
+    "loglevel": "warning"
+  },
+  "inbound": {
+    "sniffing": {
+      "enabled": true,
+      "destOverride": [
+        "http",
+        "tls"
+      ]
+    },
+    "port": 57311,
+    "tag": "socks-inbound",
+   "protocol": "socks",
+   "settings": {
+     "auth": "noauth",
+     "udp": false,
+     "ip": "0.0.0.0"
+   }
+  }
+}

@@ -1,0 +1,23 @@
+version: "3"
+services:
+  proxy-mon:
+    build: .
+    image: proxy-mon
+    container_name: proxy-mon
+    volumes: 
+      - /home/henry/v2ray-linux-64:/usr/local/v2ray
+      - /www/proxy-mon:/app
+    working_dir: /app
+    networks: 
+      - default
+    logging:
+      options:
+        max-size: "10m"
+    environment: 
+      - PROXY_MON_MAIL_FROM=${MAIL_FROM:-"Henry TIAN <chariothy@gmail.com>"}
+      - PROXY_MON_MAIL_TO=${MAIL_TO:-"Henry TIAN <chariothy@gmail.com>"}
+      - PROXY_MON_SMTP_HOST=${SMTP_HOST:-smtp.gmail.com}
+      - PROXY_MON_SMTP_PORT=${SMTP_PORT:-25}
+      - PROXY_MON_SMTP_USER=${SMTP_USER:-chariothy@gmail.com}
+      - PROXY_MON_SMTP_PWD=${SMTP_PWD}
+    command: python main.py
