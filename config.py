@@ -28,7 +28,13 @@ CONFIG = {
         'db': 'logs/benchmark.dat'
     },
     'website': 'https://www.google.com/',
-    ''
+    'mysql': {
+        'host': 'mysql',
+        'port': 3306,
+        'db': 'test',
+        'user': 'test',
+        'pwd': 'test'
+    },
     'proxy': {
         'v2ray': {
             'bin': 'v2ray',

@@ -9,18 +9,44 @@ import io
 import socket
 from contextlib import closing
 
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+from sqlalchemy.ext.declarative import declarative_base
 from colorama import Fore, Back, init, Style
 
 
 class Util(AppTool):
     """
-    蜘蛛公用代码
+    公用代码
     """
     def __init__(self):
         super(Util, self).__init__('proxy_mon', os.getcwd())
         self._session = None
 
 
+    @property
+    def session(self):
+        """
+        Lazy loading
+        """
+        if self._session:
+            return self._session
+        
+        assert(self['mysql'] is not None)
+        DB_CONN = 'mysql+mysqlconnector://{c[user]}:{c[pwd]}@{c[host]}:{c[port]}/{c[db]}?ssl_disabled=True' \
+            .format(c=self['mysql'])
+        engine = create_engine(
+            DB_CONN, 
+            pool_size=20, 
+            max_overflow=0, 
+            echo=self['log.sql'] == 1
+        )
+        from model import Base, Proxy, Delay
+        Base.metadata.create_all(engine, checkfirst=True)
+        self._session = sessionmaker(bind=engine)()
+        return self._session
+    
+    
     def D(self, *args):
         self.print('DEBUG', *args)
 

@@ -3,7 +3,12 @@ import requests
 import base64
 import json
 from urllib import parse
+from queue import Queue
+q = Queue(60)
+
 from utils import ut
+
+from model import Proxy, Delay
 
 headers = {'User-Agent':'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:23.0) Gecko/20100101 Firefox/23.0'}
 
@@ -79,8 +84,27 @@ def create_config(config_dir:str, servers):
     
     server_data = {}
     for server in servers:
+        addr = server['add'] if server['type'] == 'vmess' else server['addr']
+        proxy = ut.session.query(Proxy).filter_by(
+            type = server['type'],
+            addr = addr,
+            port = server['port']
+        ).one_or_none()
+        
+        if proxy is None:
+            ut.D('数据库中未找到"{}"'.format(server['remark']))
+            proxy = Proxy()
+            proxy.type = server['type']
+            proxy.addr = addr
+            proxy.port = server['port']
+            proxy.remark = server['remark']
+            ut.session.add(proxy)
+            ut.session.commit()
+        else:
+            ut.D('"{}"已经在数据库中,ID={}'.format(server['remark'], proxy.id))
+            
         if server['type'] == 'vmess':
-            with open(f'v2ray_v{server["v"]}.json', 'r', encoding='utf8') as fp:
+            with open(f'{server["type"]}_v{server["v"]}.json', 'r', encoding='utf8') as fp:
                 data = json.load(fp)
             if not data:
                 continue
@@ -107,8 +131,10 @@ def create_config(config_dir:str, servers):
                 addr=server['add'],
                 port=server['port'],
                 local_port=config['inbound']['port'],
-                remark=server['remark']
+                remark=server['remark'],
+                proxy_id=proxy.id,
+                q=q
             )
         elif server['type'] == 'ss':
-            server_data[f"{server['addr']}:{server['port']}"] = server
+            server_data[f"{server['addr']}:{server['port']}"] = {**server, **{'proxy_id': proxy.id, 'q': q}}
     return server_data
