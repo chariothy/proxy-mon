@@ -58,11 +58,14 @@ while not input_correct:
             break
         accepted_ids.append(proxy_id_int)
         
+print('选中代理：', end='')
 min_len = 9999
 for accepted_id in accepted_ids:
     remark = id_remark[accepted_id]
+    print(remark, end=', ')
     if len(data[remark]) < min_len:
         min_len = len(data[remark])
+print()
 
 for accepted_id in accepted_ids:
     remark = id_remark[accepted_id]
@@ -82,5 +85,5 @@ for accepted_id in accepted_ids:
 
 plt.rcParams['font.sans-serif'] = ['Arial Unicode MS']
 plt.tight_layout()
-print(get_backend())
+#print(get_backend())
 plt.show()
