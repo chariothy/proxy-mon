@@ -6,38 +6,39 @@ import matplotlib.dates as md
 from datetime import datetime, timedelta
 from pybeans import alignment
 
-delays = ut.session \
-    .query(Delay.proxy_id, Proxy.remark, Proxy.type, Delay.when, Delay.value) \
-    .join(Delay, Proxy.id == Delay.proxy_id) \
-    .where(Delay.when > (datetime.now()-timedelta(days = 3))) \
-    .order_by(Proxy.id) \
-    .all()
+
+def get_selected_data(proxy_id:tuple):
+    return ut.session \
+        .query(Delay.proxy_id, Proxy.type, Delay.when, Delay.value) \
+        .join(Delay, Proxy.id == Delay.proxy_id) \
+        .where(Delay.when > (datetime.now()-timedelta(days = 3))) \
+        .where(Proxy.id == proxy_id) \
+        .order_by(Delay.when) \
+        .all()
+    
+    
+def get_all_proxies():
+    return ut.session \
+        .query(Proxy) \
+        .all()
+
 
 data = {}
 id_remark = {}
-first_proxy = None
 x_ticks = []
 
-for i, d in enumerate(delays):
-    if first_proxy is None:
-        first_proxy = d.remark
-    if d.remark not in data:
-        data[d.remark] = []
-        id_remark[d.proxy_id] = d.remark
-        print(str(d.proxy_id).ljust(3), '|', alignment(d.remark, 30), '|', end=' ')
-        if len(data.keys()) % 5 == 0:
-            print()
-            #print('-'*175)
-    if d.remark == first_proxy:
-        x_ticks.append(d.when)
-    data[d.remark].append(d.value)
-    #print(d.remark, d.type, d.value, d.when)
+for i, p in enumerate(get_all_proxies()):
+    data[p.remark] = dict(x=[], y=[])
+    id_remark[p.id] = p.remark
+    print(str(p.id).ljust(3), '|', alignment(p.remark, 30), '|', end=' ')
+    if len(data.keys()) % 5 == 0:
+        print()
 
 print()
 
 input_correct = False
 while not input_correct:
-    proxy_ids = input('输入要显示的代理id，以逗号分隔：')
+    proxy_ids = input('>>> 输入要显示的代理id，以逗号分隔：')
     proxy_id_list = proxy_ids.split(',')
     accepted_ids = []
     input_correct = True
@@ -58,27 +59,24 @@ while not input_correct:
             break
         accepted_ids.append(proxy_id_int)
         
-print('选中代理：', end='')
-min_len = 9999
-for accepted_id in accepted_ids:
-    remark = id_remark[accepted_id]
-    print(remark, end=', ')
-    if len(data[remark]) < min_len:
-        min_len = len(data[remark])
-print()
+print('>>> 选中代理：', ', '.join([id_remark[id] for id in accepted_ids]))
 
-for accepted_id in accepted_ids:
-    remark = id_remark[accepted_id]
+for proxy_id in accepted_ids:
+    delays = get_selected_data(proxy_id)
+    remark = id_remark[proxy_id]
+    for d in delays:
+        data[remark]['x'].append(d.when)
+        data[remark]['y'].append(d.value)
+
     fig, ax = plt.subplots()
     #print(remark, len(x_ticks), len(data[remark]), min_len)
-    ax.plot(x_ticks[:min_len], data[remark][:min_len], "o-", label=remark)
+    ax.plot(data[remark]['x'], data[remark]['y'], "o-", label=remark)
     ax.set_title(f'Delay curve - {remark}')
     ax.set_xlabel('Time')
     ax.set_ylabel('Curl Delay')
-    ax.set_xticks(x_ticks)
     xfmt = md.DateFormatter('%H:%M')
     ax.xaxis.set_major_formatter(xfmt)
-    ax.set_xticks(x_ticks[::10])
+    ax.set_xticks(data[remark]['x'][::50])
 
     for label in ax.xaxis.get_ticklabels():
         label.set_rotation(45)
