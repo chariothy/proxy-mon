@@ -58,6 +58,11 @@ def _request_page(server, local_port):
     
     q = server['q']
     q.put((server['proxy_id'], ping))
+    
+    # sleep 乘以倍速，高倍速的测试次数少些
+    sleep = (300 + random.random()*10) * server['multi']
+    ut.D(f'zZZ 睡眠{sleep}秒 ...')
+    time.sleep(sleep)
     return ping
     
     
@@ -84,7 +89,6 @@ def _test_forever(server):
     start_client(server)
     while True:
         _request_page(server, server['local_port'])
-        time.sleep(50 + random.random()*10)
         
         
 def benchmark():

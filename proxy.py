@@ -1,15 +1,15 @@
 from os import path
 import requests
 import base64
-import json
+import json, re
 from urllib import parse
 from queue import Queue
 q = Queue(60)
 
 from utils import ut
-
 from model import Proxy, Delay
 
+reg_proxy_multi = re.compile(r'\|(\d\.?\d?)x(?:\||$)')
 headers = {'User-Agent':'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:23.0) Gecko/20100101 Firefox/23.0'}
 
 def padding_base64(data):
@@ -103,6 +103,12 @@ def create_config(config_dir:str, servers):
         else:
             ut.D('"{}"已经在数据库中,ID={}'.format(server['remark'], proxy.id))
             
+        match = reg_proxy_multi.search(server['remark'])
+        if match:
+            multi = float(match.groups()[0])
+        else:
+            multi = 1
+            
         if server['type'] == 'vmess':
             with open(f'{server["type"]}_v{server["v"]}.json', 'r', encoding='utf8') as fp:
                 data = json.load(fp)
@@ -133,8 +139,25 @@ def create_config(config_dir:str, servers):
                 local_port=config['inbound']['port'],
                 remark=server['remark'],
                 proxy_id=proxy.id,
-                q=q
+                q=q,
+                multi=multi
             )
         elif server['type'] == 'ss':
-            server_data[f"{server['addr']}:{server['port']}"] = {**server, **{'proxy_id': proxy.id, 'q': q}}
+            server_data[f"{server['addr']}:{server['port']}"] = {**server, **dict(
+                proxy_id=proxy.id, 
+                q=q,
+                multi=multi
+                )}
     return server_data
+
+
+
+if __name__ == '__main__':
+    servers = subscribe(ut['proxy.v2ray.subscribe'])
+    for server in servers:
+        print(server['remark'])
+        match = reg_proxy_multi.search(server['remark'])
+        if match:
+            print(match.groups())
+            multi = float(match.groups()[0])
+            print(multi)

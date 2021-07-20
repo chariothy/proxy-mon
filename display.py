@@ -5,83 +5,112 @@ import matplotlib.pyplot as plt
 import matplotlib.dates as md
 from datetime import datetime, timedelta
 from pybeans import alignment
+import pandas as pd
 
 
-def get_selected_data(proxy_id:tuple):
+def query_delay(proxy_id:int):
     return ut.session \
         .query(Delay.proxy_id, Proxy.type, Delay.when, Delay.value) \
         .join(Delay, Proxy.id == Delay.proxy_id) \
         .where(Delay.when > (datetime.now()-timedelta(days = 3))) \
         .where(Proxy.id == proxy_id) \
-        .order_by(Delay.when) \
-        .all()
-    
-    
-def get_all_proxies():
-    return ut.session \
-        .query(Proxy) \
-        .all()
+        .order_by(Delay.when)
 
+def display():
+    id_remark = {}
 
-data = {}
-id_remark = {}
-x_ticks = []
+    proxies = pd.read_sql(Proxy.__tablename__, ut.conn)
 
-for i, p in enumerate(get_all_proxies()):
-    data[p.remark] = dict(x=[], y=[])
-    id_remark[p.id] = p.remark
-    print(str(p.id).ljust(3), '|', alignment(p.remark, 30), '|', end=' ')
-    if len(data.keys()) % 5 == 0:
-        print()
+    for i, p in proxies.iterrows():
+        id_remark[p.id] = p.remark
+        print(str(p.id).ljust(3), '|', alignment(p.remark, 30), '|', end=' ')
+        if (i+1) % 5 == 0:
+            print()
 
-print()
+    print()
+    input_correct = False
+    while not input_correct:
+        proxy_ids = input('>>> 输入要显示的代理id，以逗号分隔：')
+        proxy_id_list = proxy_ids.split(',')
+        accepted_ids = []
+        input_correct = True
+        for proxy_id in proxy_id_list:
+            if not proxy_id.isdigit():
+                print(f'>>> 不能接受{proxy_id}, 只能输入数字')
+                input_correct = False
+                break
+            try:
+                proxy_id_int = int(proxy_id)
+            except Exception:
+                print(f'>>> 不能接受{proxy_id}, 只能输入数字')
+                input_correct = False
+                break
+            if proxy_id_int not in id_remark:
+                print(f'>>> {proxy_id}不是正确的代理ID')
+                input_correct = False
+                break
+            accepted_ids.append(proxy_id_int)
+            
+    print('>>> 选中代理：', ', '.join([id_remark[id] for id in accepted_ids]))
 
-input_correct = False
-while not input_correct:
-    proxy_ids = input('>>> 输入要显示的代理id，以逗号分隔：')
-    proxy_id_list = proxy_ids.split(',')
-    accepted_ids = []
-    input_correct = True
-    for proxy_id in proxy_id_list:
-        if not proxy_id.isdigit():
-            print(f'>>> 不能接受{proxy_id}, 只能输入数字')
-            input_correct = False
-            break
-        try:
-            proxy_id_int = int(proxy_id)
-        except Exception:
-            print(f'>>> 不能接受{proxy_id}, 只能输入数字')
-            input_correct = False
-            break
-        if proxy_id_int not in id_remark:
-            print(f'>>> {proxy_id}不是正确的代理ID')
-            input_correct = False
-            break
-        accepted_ids.append(proxy_id_int)
+    for proxy_id in accepted_ids:
+        q = query_delay(proxy_id)
+        df = pd.read_sql(q.statement, q.session.bind, parse_dates=["when"])
+        df.describe()
+        #print(df)
+        #print(df.shape)
         
-print('>>> 选中代理：', ', '.join([id_remark[id] for id in accepted_ids]))
+        remark = id_remark[proxy_id]
 
-for proxy_id in accepted_ids:
-    delays = get_selected_data(proxy_id)
-    remark = id_remark[proxy_id]
-    for d in delays:
-        data[remark]['x'].append(d.when)
-        data[remark]['y'].append(d.value)
+        fig, _ = plt.subplots()
+        ax1 = fig.add_subplot(2, 1, 1)
+        #print(remark, len(x_ticks), len(data[remark]), min_len)
+        ax1.plot(df.when, df.value, "o-", label=remark)
+        ax1.set_title(f'Delay curve - {remark}')
+        ax1.set_xlabel('Time')
+        ax1.set_ylabel('Curl Delay')
+        xfmt = md.DateFormatter('%H:%M')
+        ax1.xaxis.set_major_formatter(xfmt)
+        ax1.set_xticks(df.when[::100])
+        for label in ax1.xaxis.get_ticklabels():
+            label.set_rotation(45)
+        plt.grid() 
 
-    fig, ax = plt.subplots()
-    #print(remark, len(x_ticks), len(data[remark]), min_len)
-    ax.plot(data[remark]['x'], data[remark]['y'], "o-", label=remark)
-    ax.set_title(f'Delay curve - {remark}')
-    ax.set_xlabel('Time')
-    ax.set_ylabel('Curl Delay')
-    xfmt = md.DateFormatter('%H:%M')
-    ax.xaxis.set_major_formatter(xfmt)
-    ax.set_xticks(data[remark]['x'][::50])
+        ax2 = fig.add_subplot(2, 1, 2)
+        # 绘制直方图
+        df['value'].plot.hist(bins=30, alpha=0.5, rwidth=0.9, ax=ax2)
+        ax3 = ax2.twinx()
+        # 绘制密度图
+        df['value'].plot(kind='kde', secondary_y=True, ax=ax3)
+        #ax3.set_xticklabels([])
+        plt.grid()      # 添加网格
+        
+        p10 = df.quantile(0.1).value
+        p90 = df.quantile(0.9).value
+        txt = f'''
+数据量 = {df.count().value}\n
+最小值 = {df.min().value}\n
+最大值 = {df.max().value}\n
+平均值 = {df.mean().value}\n
+10%位数 = {p10}\n
+中位数 = {df.median().value}\n
+90%位数 = {p90}\n
+10~90数据量 = {df[(df.value >= p10) & (df.value <= p90)].count().value}\n
+10~90数据占比 = {df[(df.value >= p10) & (df.value <= p90)].count().value / df.count().value}\n
+超时数据量 = {df[df.value.isnull()].count().proxy_id }\n
+超时数据占比 = {df[df.value.isnull()].count().proxy_id / df.count().value}\n
+标准差 = {df.std().value}\n
+平均绝对偏差 = {df.mad().value}\n
+偏度 = {df.skew().value}\n
+峰度 = {df.kurt().value}
+'''
+        fig.text(0.2, 0.1, txt, bbox=dict(facecolor='none', edgecolor='blue', pad=10.0))
 
-    for label in ax.xaxis.get_ticklabels():
-        label.set_rotation(45)
+    plt.rcParams['font.sans-serif'] = ['Arial Unicode MS']
+    plt.tight_layout()
+    #print(get_backend())
+    plt.show()
+    
 
-plt.rcParams['font.sans-serif'] = ['Arial Unicode MS']
-plt.tight_layout()
-#print(get_backend())
-plt.show()
+if __name__ == '__main__':
+    display()

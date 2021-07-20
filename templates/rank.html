@@ -1,0 +1,48 @@
+<style>
+    table { border-collapse: collapse; margin: 3px}
+    tr.cat { background-color: #7fff00;}
+    tr.date { background-color: #fff8dc;}
+    td { border: 1px solid #999; padding: 5px;}
+    table thead {
+        background-color: #CCE8EB;
+        font-weight: bold;
+    }
+    td.score { background-color: #fff8dc; }
+    thead td { text-align: center; }
+</style>
+{% for multi in data %}
+<table>
+    <thead>
+        <tr class="cat">
+            <td colspan="4">{{multi}}倍速组</td>
+        </tr>
+        <tr>
+            <td>类型</td>
+            <td>均值</td>
+            <td>中位数</td>
+            <td>5~95%占比</td>
+            <td>超时占比</td>
+            <td>STD</td>
+            <td>样本数</td>
+            <td>综合</td>
+            <td>名称</td>
+        </tr>
+    </thead>
+    <tbody>
+        {% for proxy in data[multi] %}
+        <tr>
+            <td>{{ proxy['type'] }}</td>
+            <td>{{ proxy['vmean'] }}</td>
+            <td>{{ proxy['vmed'] }}</td>
+            <td>{{ proxy['vper'] }}%</td>
+            <td>{{ proxy['outper'] }}%</td>
+            <td>{{ proxy['std'] }}</td>
+            <td>{{ proxy['count'] }}</td>
+            <td class="score">{{ proxy['score'] }}</td>
+            <td>{{ proxy['remark'] }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+<br>
+{% endfor %}
