@@ -82,7 +82,7 @@ def subscribe(url):
 def create_config(config_dir:str, servers):
     data = {}
     
-    server_data = {}
+    server_data = []
     for server in servers:
         addr = server['add'] if server['type'] == 'vmess' else server['addr']
         proxy = ut.session.query(Proxy).filter_by(
@@ -131,7 +131,7 @@ def create_config(config_dir:str, servers):
             config_path = f"{config_dir}/{server['add']}_{server['port']}.json"
             with open(config_path, 'w', encoding='utf8') as fd:
                 json.dump(config, fd, indent=2, ensure_ascii=False)
-            server_data[f"{server['add']}:{server['port']}"] = dict(
+            server_data.append(dict(
                 type=server['type'],
                 path=config_path,
                 addr=server['add'],
@@ -141,15 +141,14 @@ def create_config(config_dir:str, servers):
                 proxy_id=proxy.id,
                 q=q,
                 multi=multi
-            )
+            ))
         elif server['type'] == 'ss':
-            server_data[f"{server['addr']}:{server['port']}"] = {**server, **dict(
+            server_data.append({**server, **dict(
                 proxy_id=proxy.id, 
                 q=q,
                 multi=multi
-                )}
+                )})
     return server_data
-
 
 
 if __name__ == '__main__':

@@ -100,17 +100,17 @@ def benchmark():
             #ut.D(servers)
             configs = create_config(proxy_config['config_dir'], servers)
             #ut.D(configs)
-            filter = getattr(proxy_filter, proxy_config['vendor'])
-            ut.D('订阅找到{}个服务节点'.format(len(configs)))
-            configs = filter(configs)
+            ut.D('订阅获得{}个服务节点'.format(len(configs)))
+            pfilter = getattr(proxy_filter, proxy_config['vendor'])
+            configs = pfilter(configs)
             ut.D('过滤后剩下{}个服务节点'.format(len(configs)))
             if ut['max_client'] == 0: #无限客户端，因此无需退出客户端
                 pool = ThreadPool(len(configs))
-                server_info = pool.map_async(_test_forever, configs.values())
+                server_info = pool.map_async(_test_forever, configs)
                 pool.close()
             else:
                 pool = ThreadPool(ut['max_client'])
-                server_info = pool.map_async(_test_and_kill, configs.values())
+                server_info = pool.map_async(_test_and_kill, configs)
                 pool.close()
     
     while True:
