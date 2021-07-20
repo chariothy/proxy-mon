@@ -92,14 +92,14 @@ def rank():
         #print(dfr)
         sorted_dfr = dfr.sort_values(by=['score'], ignore_index=True)
         print(sorted_dfr.head(5))
-        data[multi] = sorted_dfr.head(top).T.to_dict().values()
+        data[multi] = sorted_dfr.T.to_dict().values()
     
     if data:
         template = tmp_env.get_template('rank.html')
         html = template.render({'data': data})
         #su.D(html)
         html = transform(html)
-        ut.send_email(f'最新TOP{top}代理报告', html_body=html)
+        ut.D('发送邮件：', ut.send_email(f'最新代理服务器统计报告', html_body=html))
     
 if __name__ == '__main__':
     rank()
