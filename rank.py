@@ -6,6 +6,7 @@ from model import Proxy, Delay
 import pandas as pd
 from display import query_delay
 from numpy import float64
+from datetime import datetime, timedelta
 
 import re
 reg_proxy_multi = re.compile(r'\|(\d\.?\d?)x(?:\||$)')
@@ -25,6 +26,13 @@ import os
 from jinja2 import Environment, FileSystemLoader
 tmp_env = Environment(loader=FileSystemLoader(os.getcwd() + '/templates'), finalize=my_finalize)
 
+
+def clear_old_data(days:int=3):
+    ut.D(f'############ 清除{days}天前的数据 ############')
+    ut.session.query(Delay).where(Delay.when < (datetime.now()-timedelta(days = days))).delete()
+    ut.session.commit()
+    
+    
 def rank():
     id_proxy = {}
     multi_proxies = {}
@@ -95,3 +103,4 @@ def rank():
     
 if __name__ == '__main__':
     rank()
+    clear_old_data()
