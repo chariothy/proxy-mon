@@ -45,19 +45,19 @@ def rank():
         df = pd.read_sql(q.statement, q.session.bind, parse_dates=["when"])
         if df.count().proxy_id < 100:
             continue
-        p05 = df.quantile(0.05).value
-        p95 = df.quantile(0.95).value
+        p05 = df.value.quantile(0.05)
+        p95 = df.value.quantile(0.95)
         valid_df = df[(df.value >= p05) & (df.value <= p95)]
         multi_proxies[multi][p.id] = [
             p.id,
-            valid_df.mean().value,
-            valid_df.median().value,
-            valid_df.count().value / df.count().value * 100,
-            df[df.value.isnull()].count().proxy_id / df.count().value * 100,
-            df.std().value,
+            valid_df.value.mean(),
+            valid_df.value.median(),
+            valid_df.value.count() / df.value.count() * 100,
+            df[df.value.isnull()].proxy_id.count() / df.value.count() * 100,
+            df.value.std(),
             p.remark,
             p.type,
-            df.count().value,
+            df.value.count(),
             0
         ]
         
@@ -78,12 +78,12 @@ def rank():
     data = {}
     top = 2
     for multi in multi_proxies:
-        #ut.D(f'倍率{multi}组TOP3')
+        ut.D(f'倍率{multi}组TOP3')
         dfr = DataFrame(multi_proxies[multi]).T
         dfr.rename(columns=columns,inplace=True)
         #print(dfr)
         sorted_dfr = dfr.sort_values(by=['score'], ignore_index=True)
-        print(sorted_dfr)
+        print(sorted_dfr.head(5))
         data[multi] = sorted_dfr.head(top).T.to_dict().values()
     
     if data:
@@ -91,7 +91,7 @@ def rank():
         html = template.render({'data': data})
         #su.D(html)
         html = transform(html)
-        #ut.send_email(f'最新TOP{top}代理报告', html_body=html)
+        ut.send_email(f'最新TOP{top}代理报告', html_body=html)
     
 if __name__ == '__main__':
     rank()
