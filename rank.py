@@ -1,5 +1,7 @@
 from pandas.core.frame import DataFrame
-from utils import ut
+from utils import Util
+ut = Util('proxy-rank')
+
 from model import Proxy, Delay
 import pandas as pd
 from display import query_delay
@@ -41,6 +43,8 @@ def rank():
         
         q = query_delay(p.id)
         df = pd.read_sql(q.statement, q.session.bind, parse_dates=["when"])
+        if df.count().proxy_id < 100:
+            continue
         p05 = df.quantile(0.05).value
         p95 = df.quantile(0.95).value
         valid_df = df[(df.value >= p05) & (df.value <= p95)]
@@ -57,7 +61,6 @@ def rank():
             0
         ]
         
-    multi_proxie_score = {}
     columns = {0: 'id', 1:'vmean', 2:'vmed', 3:'vper', 4:'outper', 5:'std', 6:'remark', 7:'type', 8:'count', 9:'score'}
     column_asc = {'vmean': True, 'vmed': True, 'vper': False, 'outper': True, 'std': True}
     
@@ -80,14 +83,15 @@ def rank():
         dfr.rename(columns=columns,inplace=True)
         #print(dfr)
         sorted_dfr = dfr.sort_values(by=['score'], ignore_index=True)
-        #print(sorted_dfr.head(3))
+        print(sorted_dfr)
         data[multi] = sorted_dfr.head(top).T.to_dict().values()
     
-    template = tmp_env.get_template('rank.html')
-    html = template.render({'data': data})
-    #su.D(html)
-    html = transform(html)
-    ut.send_email(f'最新TOP{top}代理报告', html_body=html)
+    if data:
+        template = tmp_env.get_template('rank.html')
+        html = template.render({'data': data})
+        #su.D(html)
+        html = transform(html)
+        #ut.send_email(f'最新TOP{top}代理报告', html_body=html)
     
 if __name__ == '__main__':
     rank()

@@ -19,8 +19,8 @@ class Util(AppTool):
     """
     公用代码
     """
-    def __init__(self):
-        super(Util, self).__init__('proxy_mon', os.getcwd())
+    def __init__(self, name):
+        super(Util, self).__init__(name, os.getcwd())
         self._session = None
 
     
@@ -122,4 +122,4 @@ class Util(AppTool):
             return s.getsockname()[1]
         
 
-ut = Util()
+ut = Util('proxy-mon')

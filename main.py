@@ -9,6 +9,7 @@ from multiprocessing.dummy import Pool as ThreadPool
 from utils import ut
 from model import Delay
 from proxy import q, subscribe, create_config
+import proxy_filter
 
 
 def get_proxy(local_port):
@@ -99,7 +100,10 @@ def benchmark():
             #ut.D(servers)
             configs = create_config(proxy_config['config_dir'], servers)
             #ut.D(configs)
-            ut.D('找到{}个服务节点'.format(len(configs)))
+            filter = getattr(proxy_filter, proxy_config['vendor'])
+            ut.D('订阅找到{}个服务节点'.format(len(configs)))
+            configs = filter(configs)
+            ut.D('过滤后剩下{}个服务节点'.format(len(configs)))
             if ut['max_client'] == 0: #无限客户端，因此无需退出客户端
                 pool = ThreadPool(len(configs))
                 server_info = pool.map_async(_test_forever, configs.values())

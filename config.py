@@ -39,6 +39,7 @@ CONFIG = {
         'v2ray': {
             'bin': 'v2ray',
             'config_dir': '/app/logs',
+            'vendor': 'fastlink',
             'subscribe': 'https://fastlink.ws/link/Q9J0Vmc3ffdhr3r?sub=3'
         },
         'ss': {
