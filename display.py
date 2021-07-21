@@ -1,29 +1,20 @@
 from utils import ut
-from model import Proxy, Delay
+from model import Proxy, Delay, query_delay, query_proxy
 from matplotlib import get_backend
 import matplotlib.pyplot as plt
 import matplotlib.dates as md
-from datetime import datetime, timedelta
 from pybeans import alignment
 import pandas as pd
 
 
-def query_delay(proxy_id:int):
-    return ut.session \
-        .query(Delay.proxy_id, Proxy.type, Delay.when, Delay.value) \
-        .join(Delay, Proxy.id == Delay.proxy_id) \
-        .where(Delay.when > (datetime.now()-timedelta(days = 3))) \
-        .where(Proxy.id == proxy_id) \
-        .order_by(Delay.when)
-
 def display():
-    id_remark = {}
+    id_proxy = {}
 
-    proxies = pd.read_sql(Proxy.__tablename__, ut.conn)
+    proxies = query_proxy(ut.session).all()
 
-    for i, p in proxies.iterrows():
-        id_remark[p.id] = p.remark
-        print(str(p.id).ljust(3), '|', alignment(p.remark, 30), '|', end=' ')
+    for i, p in enumerate(proxies):
+        id_proxy[p.id] = p
+        print(f'ID {p.id}'.ljust(6), f'RK {p.rank}'.ljust(6), '|', alignment(p.remark, 30), '||', end=' ')
         if (i+1) % 5 == 0:
             print()
 
@@ -45,22 +36,22 @@ def display():
                 print(f'>>> 不能接受{proxy_id}, 只能输入数字')
                 input_correct = False
                 break
-            if proxy_id_int not in id_remark:
+            if proxy_id_int not in id_proxy:
                 print(f'>>> {proxy_id}不是正确的代理ID')
                 input_correct = False
                 break
             accepted_ids.append(proxy_id_int)
             
-    print('>>> 选中代理：', ', '.join([id_remark[id] for id in accepted_ids]))
+    print('>>> 选中代理：', ', '.join([id_proxy[id].remark for id in accepted_ids]))
 
     for proxy_id in accepted_ids:
-        q = query_delay(proxy_id)
+        q = query_delay(ut.session, proxy_id)
         df = pd.read_sql(q.statement, q.session.bind, parse_dates=["when"])
         df.describe()
         #print(df)
         #print(df.shape)
         
-        remark = id_remark[proxy_id]
+        remark = id_proxy[proxy_id].remark
 
         fig, _ = plt.subplots()
         ax1 = fig.add_subplot(2, 1, 1)
@@ -87,6 +78,7 @@ def display():
         
         p10 = df.quantile(0.1).value
         p90 = df.quantile(0.9).value
+        valid_df = df[(df.value >= p10) & (df.value <= p90)]
         txt = f'''
 数据量 = {df.count().value}\n
 最小值 = {df.min().value}\n
@@ -95,14 +87,15 @@ def display():
 10%位数 = {p10}\n
 中位数 = {df.median().value}\n
 90%位数 = {p90}\n
-10~90数据量 = {df[(df.value >= p10) & (df.value <= p90)].count().value}\n
-10~90数据占比 = {df[(df.value >= p10) & (df.value <= p90)].count().value / df.count().value}\n
+10~90数据量 = {valid_df.count().value}\n
+10~90数据占比 = {valid_df.count().value / df.count().value}\n
 超时数据量 = {df[df.value.isnull()].count().proxy_id }\n
 超时数据占比 = {df[df.value.isnull()].count().proxy_id / df.count().value}\n
 标准差 = {df.std().value}\n
 平均绝对偏差 = {df.mad().value}\n
 偏度 = {df.skew().value}\n
-峰度 = {df.kurt().value}
+峰度 = {df.kurt().value}\n
+最近排名 = {id_proxy[proxy_id].rank}
 '''
         fig.text(0.2, 0.1, txt, bbox=dict(facecolor='none', edgecolor='blue', pad=10.0))
 

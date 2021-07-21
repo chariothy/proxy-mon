@@ -8,6 +8,7 @@
         font-weight: bold;
     }
     td.score { background-color: #fff8dc; }
+    td.up { color:#ff0000;}
     thead td { text-align: center; }
 </style>
 {% for multi in data %}
@@ -24,7 +25,8 @@
             <td>超时占比</td>
             <td>STD</td>
             <td>样本数</td>
-            <td>综合</td>
+            <td>上次排名</td>
+            <td>本次排名</td>
             <td>名称</td>
         </tr>
     </thead>
@@ -38,7 +40,8 @@
             <td>{{ proxy['outper'] }}%</td>
             <td>{{ proxy['std'] }}</td>
             <td>{{ proxy['count'] }}</td>
-            <td class="score">{{ proxy['score'] }}</td>
+            <td>{{ proxy['lscore'] }}</td>
+            <td class="score {{'up' if proxy['dscore'] < 0 else ''}}">{{ proxy['score'] }} {{ '' if proxy['dscore'] == 0 else '({} {})'.format('↑' if proxy['dscore'] < 0 else '↓', -proxy['dscore']) }}</td>
             <td>{{ proxy['remark'] }}</td>
         </tr>
         {% endfor %}

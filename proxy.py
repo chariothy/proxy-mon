@@ -160,3 +160,4 @@ if __name__ == '__main__':
             print(match.groups())
             multi = float(match.groups()[0])
             print(multi)
+    create_config(ut['proxy.v2ray.config_dir'], servers)
