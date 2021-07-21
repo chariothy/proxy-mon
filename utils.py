@@ -38,6 +38,7 @@ class Util(AppTool):
         if self._session:
             return self._session
         
+        print(self.conn)
         assert(self['mysql'] is not None)
         engine = create_engine(
             self.conn, 

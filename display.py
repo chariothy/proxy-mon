@@ -56,7 +56,8 @@ def display():
         fig, _ = plt.subplots()
         ax1 = fig.add_subplot(2, 1, 1)
         #print(remark, len(x_ticks), len(data[remark]), min_len)
-        ax1.plot(df.when, df.value, "o-", label=remark)
+        #ax1.plot(df.when, df.value, "o-", label=remark)
+        ax1.scatter(df.when, df.value, alpha=0.5, label=remark)
         ax1.set_title(f'Delay curve - {remark}')
         ax1.set_xlabel('Time')
         ax1.set_ylabel('Curl Delay')
@@ -76,28 +77,19 @@ def display():
         #ax3.set_xticklabels([])
         plt.grid()      # 添加网格
         
-        p10 = df.quantile(0.1).value
-        p90 = df.quantile(0.9).value
+        p10 = df.value.quantile(0.1)
+        p90 = df.value.quantile(0.9)
         valid_df = df[(df.value >= p10) & (df.value <= p90)]
         txt = f'''
-数据量 = {df.count().value}\n
-最小值 = {df.min().value}\n
-最大值 = {df.max().value}\n
-平均值 = {df.mean().value}\n
-10%位数 = {p10}\n
-中位数 = {df.median().value}\n
-90%位数 = {p90}\n
-10~90数据量 = {valid_df.count().value}\n
-10~90数据占比 = {valid_df.count().value / df.count().value}\n
-超时数据量 = {df[df.value.isnull()].count().proxy_id }\n
-超时数据占比 = {df[df.value.isnull()].count().proxy_id / df.count().value}\n
-标准差 = {df.std().value}\n
-平均绝对偏差 = {df.mad().value}\n
-偏度 = {df.skew().value}\n
-峰度 = {df.kurt().value}\n
+最小值 = {df.value.min()}, 最大值 = {df.value.max()}, 平均值 = {round(df.value.mean(),2)}\n
+10%位数 = {round(p10,2)}, 中位数 = {round(df.value.median(),2)}, 90%位数 = {round(p90,2)}\n
+数据量 = {df.value.count()}, 10~90%数据量 = {valid_df.value.count()}, 10~90%数据占比 = {round(100 * valid_df.value.count() / df.value.count(),2)}%\n
+超时数据量 = {df[df.value.isnull()].proxy_id.count() }, 超时数据占比 = {round(100 * df[df.value.isnull()].proxy_id.count() / df.count().value,2)}%\n
+标准差 = {round(df.value.std(),2)}, 平均绝对偏差 = {round(df.value.mad(),2)}\n
+偏度 = {round(df.value.skew(),2)}, 峰度 = {round(df.value.kurt(),2)}\n
 最近排名 = {id_proxy[proxy_id].rank}
 '''
-        fig.text(0.2, 0.1, txt, bbox=dict(facecolor='none', edgecolor='blue', pad=10.0))
+        fig.text(0.19, 0.35, txt, bbox=dict(facecolor='none', edgecolor='blue', pad=3.0))
 
     plt.rcParams['font.sans-serif'] = ['Arial Unicode MS']
     plt.tight_layout()

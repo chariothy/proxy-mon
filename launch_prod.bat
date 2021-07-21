@@ -1,0 +1,1 @@
+set "PROXY_MON_ENV=prod" & START /MAX %LOCALAPPDATA%\Continuum\anaconda3\envs\proxy-mon\python.exe display.py
