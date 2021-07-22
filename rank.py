@@ -67,6 +67,7 @@ def rank():
             df.value.count(),
             0,
             p.rank,
+            0,
             0   # 必须放在最后一个
         ]
     #ut.D(multi_proxies)
@@ -80,8 +81,9 @@ def rank():
         'type': None,
         'vcount': None,
         'count': None,
-        'dscore': None, # delta score
-        'lscore': None, # last score
+        'drank': None, # delta score
+        'orank': None, # last score
+        'nrank': None, # new score
         'score': None
     }
     column_name = {k:v for k,v in enumerate(columns)}
@@ -100,19 +102,21 @@ def rank():
     data = {}
     top = 2
     for multi in multi_proxies:
-        for pid in multi_proxies[multi]:
-            new_rank = multi_proxies[multi][pid][-1]
-            last_rank = multi_proxies[multi][pid][-2]
-            if last_rank is not None:
-                multi_proxies[multi][pid][-3] = new_rank - last_rank
-            id_proxy[pid].rank = new_rank
-            ut.session.add(id_proxy[pid])
+        
         ut.D(f'倍率{multi}组TOP3')
         dfr = DataFrame(multi_proxies[multi]).T
         dfr.rename(columns=column_name,inplace=True)
         #print(dfr)
         sorted_dfr = dfr.sort_values(by=['score'], ignore_index=True)
         print(sorted_dfr.head(5))
+        for i, sp in sorted_dfr.iterrows():
+            new_rank = i + 1
+            sp.nrank = new_rank
+            old_rank = multi_proxies[multi][sp.id][-3]
+            if old_rank is not None:
+                sp.drank = new_rank - old_rank
+            id_proxy[sp.id].rank = new_rank
+            ut.session.add(id_proxy[sp.id])
         data[multi] = sorted_dfr.T.to_dict().values()
     
     if data:

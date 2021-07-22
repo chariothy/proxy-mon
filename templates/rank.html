@@ -25,6 +25,7 @@
             <td>STD</td>
             <td>有效样本数</td>
             <td>样本数</td>
+            <td>得分</td>
             <td>上次排名</td>
             <td>本次排名</td>
             <td>名称</td>
@@ -40,8 +41,9 @@
             <td>{{ proxy['std'] }}</td>
             <td>{{ proxy['vcount'] }}</td>
             <td>{{ proxy['count'] }}</td>
-            <td>{{ proxy['lscore'] }}</td>
-            <td class="score {{'up' if proxy['dscore'] < 0 else ''}}">{{ proxy['score'] }} {{ '' if proxy['dscore'] == 0 else '({} {})'.format('↑' if proxy['dscore'] < 0 else '↓', -proxy['dscore']) }}</td>
+            <td>{{ proxy['score'] }}</td>
+            <td>{{ proxy['orank'] }}</td>
+            <td class="score {{'up' if proxy['drank'] < 0 else ''}}">{{ proxy['nrank'] }} {{ '' if proxy['drank'] == 0 else '({} {})'.format('↑' if proxy['drank'] < 0 else '↓', -proxy['drank']) }}</td>
             <td>{{ proxy['remark'] }}</td>
         </tr>
         {% endfor %}
