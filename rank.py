@@ -69,7 +69,7 @@ def rank():
             p.rank,
             0   # 必须放在最后一个
         ]
-    ut.D(multi_proxies)
+    #ut.D(multi_proxies)
     columns = {
         'id': None,
         'vmean': True,  # valid mean
