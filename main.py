@@ -61,7 +61,7 @@ def _request_page(server, local_port):
     q.put((server['proxy_id'], ping))
     
     # sleep 乘以倍速，高倍速的测试次数少些
-    sleep = (300 + random.random()*10) * server['multi']
+    sleep = (300 + random.random()*10) * max(server['multi'], 1)
     ut.D(f'zZZ 睡眠{sleep}秒 ...')
     time.sleep(sleep)
     return ping

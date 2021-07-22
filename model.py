@@ -37,11 +37,11 @@ class Delay(Base):
     value = Column(INTEGER, nullable=True, comment='延迟')
     
     
-def query_delay(session, proxy_id:int):
+def query_delay(session, proxy_id:int, days:int=3):
     return session \
         .query(Delay.proxy_id, Proxy.type, Delay.when, Delay.value) \
         .join(Delay, Proxy.id == Delay.proxy_id) \
-        .where(Delay.when > (datetime.now()-timedelta(days = 3))) \
+        .where(Delay.when > (datetime.now()-timedelta(days = days))) \
         .where(Proxy.id == proxy_id) \
         .order_by(Delay.when)
         

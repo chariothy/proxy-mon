@@ -21,9 +21,9 @@
             <td>类型</td>
             <td>均值</td>
             <td>中位数</td>
-            <td>5~95%占比</td>
             <td>超时占比</td>
             <td>STD</td>
+            <td>有效样本数</td>
             <td>样本数</td>
             <td>上次排名</td>
             <td>本次排名</td>
@@ -36,9 +36,9 @@
             <td>{{ proxy['type'] }}</td>
             <td>{{ proxy['vmean'] }}</td>
             <td>{{ proxy['vmed'] }}</td>
-            <td>{{ proxy['vper'] }}%</td>
             <td>{{ proxy['outper'] }}%</td>
             <td>{{ proxy['std'] }}</td>
+            <td>{{ proxy['vcount'] }}</td>
             <td>{{ proxy['count'] }}</td>
             <td>{{ proxy['lscore'] }}</td>
             <td class="score {{'up' if proxy['dscore'] < 0 else ''}}">{{ proxy['score'] }} {{ '' if proxy['dscore'] == 0 else '({} {})'.format('↑' if proxy['dscore'] < 0 else '↓', -proxy['dscore']) }}</td>

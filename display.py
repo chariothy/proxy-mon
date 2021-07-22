@@ -77,17 +77,15 @@ def display():
         #ax3.set_xticklabels([])
         plt.grid()      # 添加网格
         
-        p10 = df.value.quantile(0.1)
-        p90 = df.value.quantile(0.9)
-        valid_df = df[(df.value >= p10) & (df.value <= p90)]
+        p01 = df.value.quantile(0.01)
+        p99 = df.value.quantile(0.99)
+        vdf = df[(df.value >= p01) & (df.value <= p99)]
         txt = f'''
-最小值 = {df.value.min()}, 最大值 = {df.value.max()}, 平均值 = {round(df.value.mean(),2)}\n
-10%位数 = {round(p10,2)}, 中位数 = {round(df.value.median(),2)}, 90%位数 = {round(p90,2)}\n
-数据量 = {df.value.count()}, 10~90%数据量 = {valid_df.value.count()}, 10~90%数据占比 = {round(100 * valid_df.value.count() / df.value.count(),2)}%\n
+最小值 = {vdf.value.min()}, 最大值 = {vdf.value.max()}, 平均值 = {round(vdf.value.mean(),2)}, 中位数 = {round(vdf.value.median(),2)} \n
+数据量 = {df.value.count()}, 有效数据量 = {vdf.value.count()}, 有效数据占比 = {round(100 * vdf.value.count() / df.value.count(),2)}%\n
 超时数据量 = {df[df.value.isnull()].proxy_id.count() }, 超时数据占比 = {round(100 * df[df.value.isnull()].proxy_id.count() / df.count().value,2)}%\n
-标准差 = {round(df.value.std(),2)}, 平均绝对偏差 = {round(df.value.mad(),2)}\n
-偏度 = {round(df.value.skew(),2)}, 峰度 = {round(df.value.kurt(),2)}\n
-最近排名 = {id_proxy[proxy_id].rank}
+标准差 = {round(vdf.value.std(),2)}, 平均绝对偏差 = {round(vdf.value.mad(),2)}\n
+偏度 = {round(vdf.value.skew(),2)}, 峰度 = {round(vdf.value.kurt(),2)}, 最近排名 = {id_proxy[proxy_id].rank}
 '''
         fig.text(0.19, 0.35, txt, bbox=dict(facecolor='none', edgecolor='blue', pad=3.0))
 
