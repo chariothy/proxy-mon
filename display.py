@@ -51,35 +51,35 @@ def display():
         #print(df)
         #print(df.shape)
         
+        p01 = df.value.quantile(0.01)
+        p99 = df.value.quantile(0.99)
+        vdf = df[(df.value >= p01) & (df.value <= p99)]
         remark = id_proxy[proxy_id].remark
 
         fig, _ = plt.subplots()
         ax1 = fig.add_subplot(2, 1, 1)
         #print(remark, len(x_ticks), len(data[remark]), min_len)
         #ax1.plot(df.when, df.value, "o-", label=remark)
-        ax1.scatter(df.when, df.value, alpha=0.5, label=remark)
+        ax1.scatter(vdf.when, vdf.value, alpha=0.5, label=remark)
         ax1.set_title(f'Delay curve - {remark}')
         ax1.set_xlabel('Time')
         ax1.set_ylabel('Curl Delay')
         xfmt = md.DateFormatter('%H:%M')
         ax1.xaxis.set_major_formatter(xfmt)
-        ax1.set_xticks(df.when[::100])
+        ax1.set_xticks(vdf.when[::100])
         for label in ax1.xaxis.get_ticklabels():
             label.set_rotation(45)
         plt.grid() 
 
         ax2 = fig.add_subplot(2, 1, 2)
         # 绘制直方图
-        df['value'].plot.hist(bins=30, alpha=0.5, rwidth=0.9, ax=ax2)
+        vdf['value'].plot.hist(bins=30, alpha=0.5, rwidth=0.9, ax=ax2)
         ax3 = ax2.twinx()
         # 绘制密度图
-        df['value'].plot(kind='kde', secondary_y=True, ax=ax3)
+        vdf['value'].plot(kind='kde', secondary_y=True, ax=ax3)
         #ax3.set_xticklabels([])
         plt.grid()      # 添加网格
         
-        p01 = df.value.quantile(0.01)
-        p99 = df.value.quantile(0.99)
-        vdf = df[(df.value >= p01) & (df.value <= p99)]
         txt = f'''
 最小值 = {vdf.value.min()}, 最大值 = {vdf.value.max()}, 平均值 = {round(vdf.value.mean(),2)}, 中位数 = {round(vdf.value.median(),2)} \n
 数据量 = {df.value.count()}, 有效数据量 = {vdf.value.count()}, 有效数据占比 = {round(100 * vdf.value.count() / df.value.count(),2)}%\n
@@ -87,7 +87,11 @@ def display():
 标准差 = {round(vdf.value.std(),2)}, 平均绝对偏差 = {round(vdf.value.mad(),2)}\n
 偏度 = {round(vdf.value.skew(),2)}, 峰度 = {round(vdf.value.kurt(),2)}, 最近排名 = {id_proxy[proxy_id].rank}
 '''
-        fig.text(0.19, 0.35, txt, bbox=dict(facecolor='none', edgecolor='blue', pad=3.0))
+        ax2.text(0.01, 0.95, txt, 
+                 transform=ax2.transAxes, 
+                 verticalalignment='top', 
+                 bbox=dict(facecolor='wheat', edgecolor='blue', pad=3.0, alpha=0.5)
+                 )
 
     plt.rcParams['font.sans-serif'] = ['Arial Unicode MS']
     plt.tight_layout()
