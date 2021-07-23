@@ -28,8 +28,10 @@ tmp_env = Environment(loader=FileSystemLoader(os.getcwd() + '/templates'), final
 
 
 def clear_old_data(days:int=3):
-    ut.D(f'############ 清除{days}天前的数据 ############')
+    ut.D(f'############ 清除{days}天前的CURL数据 ############')
     ut.session.query(Delay).where(Delay.when < (datetime.now()-timedelta(days = days))).delete()
+    ut.D(f'############ 清除{days*10}天前的排名数据 ############')
+    ut.session.query(Rank).where(Rank.when < (datetime.now()-timedelta(days = days*10))).delete()
     ut.session.commit()
     
     
@@ -67,7 +69,7 @@ def rank():
             vdf.value.count(),
             df.value.count(),
             0,
-            p.rank,
+            0 if p.avg_rank is None else round(p.avg_rank),
             0,
             0   # 必须放在最后一个
         ]
@@ -82,9 +84,9 @@ def rank():
         'type': None,
         'vcount': None,
         'count': None,
-        'drank': None, # delta score
-        'orank': None, # last score
-        'nrank': None, # new score
+        'drank': None, # delta rank
+        'arank': None,  # avg rank
+        'nrank': None, # new rank
         'score': None
     }
     column_name = {k:v for k,v in enumerate(columns)}
@@ -116,8 +118,6 @@ def rank():
             old_rank = multi_proxies[multi][sp.id][-3]
             if old_rank is not None:
                 sp.drank = new_rank - old_rank
-            id_proxy[sp.id].rank = new_rank
-            ut.session.add(id_proxy[sp.id])
             
             rank_mod = ut.session \
                 .query(Rank) \
