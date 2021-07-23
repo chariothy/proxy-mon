@@ -27,6 +27,16 @@ class Proxy(Base):
     remark = Column(VARCHAR(50), nullable=False, comment='备注')
 
 
+class Rank(Base):
+    __tablename__ = 'proxy_rank'
+    __table_args__ = {'comment': '代理历史排名'}
+
+    id = Column(INTEGER, primary_key=True, comment='ID')
+    proxy_id = Column(INTEGER, nullable=False, comment='代理ID')
+    rank  = Column(INTEGER, nullable=False, comment='排名')
+    when  = Column(VARCHAR(10), nullable=False, comment='日期')
+
+
 class Delay(Base):
     __tablename__ = 'proxy_delay'
     __table_args__ = {'comment': 'PING延迟'}
@@ -51,3 +61,10 @@ def query_proxy(session):
         .query(Proxy) \
         .where(Proxy.active == 1) \
         .order_by(Proxy.id)
+        
+        
+def query_rank(session, proxy_id:int):
+    return session \
+        .query(Rank) \
+        .where(Rank.proxy_id == proxy_id) \
+        .order_by(Rank.when)

@@ -2,7 +2,7 @@ from pandas.core.frame import DataFrame
 from utils import Util
 ut = Util('proxy-rank')
 
-from model import Proxy, Delay, query_delay, query_proxy
+from model import Proxy, Delay, Rank, query_delay, query_proxy
 import pandas as pd
 from numpy import float64
 from datetime import datetime, timedelta
@@ -11,6 +11,7 @@ import re
 reg_proxy_multi = re.compile(r'\|(\d\.?\d?)x(?:\||$)')
 
 from premailer import transform
+from pybeans import today
 
 def my_finalize(thing):
     if thing is None:
@@ -101,8 +102,8 @@ def rank():
     
     data = {}
     top = 2
+    today_str = today()
     for multi in multi_proxies:
-        
         ut.D(f'倍率{multi}组TOP3')
         dfr = DataFrame(multi_proxies[multi]).T
         dfr.rename(columns=column_name,inplace=True)
@@ -117,6 +118,18 @@ def rank():
                 sp.drank = new_rank - old_rank
             id_proxy[sp.id].rank = new_rank
             ut.session.add(id_proxy[sp.id])
+            
+            rank_mod = ut.session \
+                .query(Rank) \
+                .where(Rank.proxy_id == sp.id) \
+                .where(Rank.when == today_str) \
+                .one_or_none()
+            if not rank_mod:
+                rank_mod = Rank()
+                rank_mod.proxy_id = sp.id
+                rank_mod.when = today_str
+            rank_mod.rank = new_rank
+            ut.session.add(rank_mod)
         data[multi] = sorted_dfr.T.to_dict().values()
     
     if data:

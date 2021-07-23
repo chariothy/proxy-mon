@@ -43,7 +43,9 @@
             <td>{{ proxy['count'] }}</td>
             <td>{{ proxy['score'] }}</td>
             <td>{{ proxy['orank'] }}</td>
-            <td class="score {{'up' if proxy['drank'] < 0 else ''}}">{{ proxy['nrank'] }} {{ '' if proxy['drank'] == 0 else '({} {})'.format('↑' if proxy['drank'] < 0 else '↓', -proxy['drank']) }}</td>
+            <td class="score {{'up' if proxy['drank'] < 0 else ''}}">
+                {{ proxy['nrank'] }} {{ '' if proxy['drank'] == 0 else '({} {})'.format('↑' if proxy['drank'] < 0 else '↓', proxy['drank']|abs) }}
+            </td>
             <td>{{ proxy['remark'] }}</td>
         </tr>
         {% endfor %}

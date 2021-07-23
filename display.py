@@ -1,8 +1,9 @@
 from utils import ut
-from model import Proxy, Delay, query_delay, query_proxy
+from model import Proxy, Delay, Rank, query_delay, query_proxy, query_rank
 from matplotlib import get_backend
 import matplotlib.pyplot as plt
 import matplotlib.dates as md
+import seaborn as sns
 from pybeans import alignment
 import pandas as pd
 
@@ -56,28 +57,20 @@ def display():
         vdf = df[(df.value >= p01) & (df.value <= p99)]
         remark = id_proxy[proxy_id].remark
 
-        fig, _ = plt.subplots()
-        ax1 = fig.add_subplot(2, 1, 1)
-        #print(remark, len(x_ticks), len(data[remark]), min_len)
-        #ax1.plot(df.when, df.value, "o-", label=remark)
+        plt.figure(figsize = (20,10))
+        ax1 = plt.subplot2grid(shape=(2,2), loc=(0,0), colspan=2)
+        ax1.set_title(remark)
+        ax1.set_xlabel('日期时间')
+        ax1.set_ylabel('CURL延迟')
         ax1.scatter(vdf.when, vdf.value, alpha=0.5, label=remark)
-        ax1.set_title(f'Delay curve - {remark}')
-        ax1.set_xlabel('Time')
-        ax1.set_ylabel('Curl Delay')
-        xfmt = md.DateFormatter('%H:%M')
-        ax1.xaxis.set_major_formatter(xfmt)
-        ax1.set_xticks(vdf.when[::100])
-        for label in ax1.xaxis.get_ticklabels():
-            label.set_rotation(45)
         plt.grid() 
 
-        ax2 = fig.add_subplot(2, 1, 2)
-        # 绘制直方图
-        vdf['value'].plot.hist(bins=30, alpha=0.5, rwidth=0.9, ax=ax2)
-        ax3 = ax2.twinx()
-        # 绘制密度图
-        vdf['value'].plot(kind='kde', secondary_y=True, ax=ax3)
-        #ax3.set_xticklabels([])
+        ax2 = plt.subplot2grid(shape=(2,2), loc=(1,0))
+        plt.grid()      # 添加网格
+        ax2.set_title('直方图')
+        sns.distplot(vdf.value, bins=30, ax=ax2)
+
+        ax3 = plt.subplot2grid(shape=(2,2), loc=(1,1))
         plt.grid()      # 添加网格
         
         txt = f'''
@@ -92,8 +85,14 @@ def display():
                  verticalalignment='top', 
                  bbox=dict(facecolor='wheat', edgecolor='blue', pad=3.0, alpha=0.5)
                  )
+        
+        q = query_rank(ut.session, proxy_id)
+        rank_df = pd.read_sql(q.statement, q.session.bind, parse_dates=["when"])
+        ax3.plot(rank_df.when, rank_df['rank'], "o-", label=remark) # rank是pandas内置方法，因此不能用df.rank，只能用df['rank']
+        ax3.set_title('历史排名')
 
     plt.rcParams['font.sans-serif'] = ['Arial Unicode MS']
+    plt.subplots_adjust(hspace=0.6, wspace=0.3)
     plt.tight_layout()
     #print(get_backend())
     plt.show()

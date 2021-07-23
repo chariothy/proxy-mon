@@ -6,6 +6,7 @@ sqlalchemy
 mysql-connector-python
 pybeans>=1.3.0
 matplotlib
+seaborn
 scipy
 jinja2
 premailer
