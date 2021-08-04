@@ -15,7 +15,7 @@ def display():
 
     for i, p in enumerate(proxies):
         id_proxy[p.id] = p
-        print(f'ID {p.id}'.ljust(6), f'RK {p.rank}'.ljust(6), '|', alignment(p.remark, 30), '||', end=' ')
+        print(f'{p.id:3}', '|', alignment(p.remark, 30), '||', end=' ')
         if (i+1) % 5 == 0:
             print()
 
@@ -78,7 +78,7 @@ def display():
 数据量 = {df.value.count()}, 有效数据量 = {vdf.value.count()}, 有效数据占比 = {round(100 * vdf.value.count() / df.value.count(),2)}%\n
 超时数据量 = {df[df.value.isnull()].proxy_id.count() }, 超时数据占比 = {round(100 * df[df.value.isnull()].proxy_id.count() / df.count().value,2)}%\n
 标准差 = {round(vdf.value.std(),2)}, 平均绝对偏差 = {round(vdf.value.mad(),2)}\n
-偏度 = {round(vdf.value.skew(),2)}, 峰度 = {round(vdf.value.kurt(),2)}, 最近排名 = {id_proxy[proxy_id].rank}
+偏度 = {round(vdf.value.skew(),2)}, 峰度 = {round(vdf.value.kurt(),2)}
 '''
         ax2.text(0.01, 0.95, txt, 
                  transform=ax2.transAxes, 
