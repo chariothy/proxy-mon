@@ -133,6 +133,7 @@ def rank():
         data[multi] = sorted_dfr.T.to_dict().values()
     
     if data:
+        #TODO: Report all NONE proxy
         ut.session.commit()
         template = tmp_env.get_template('rank.html')
         html = template.render({'data': data})
