@@ -34,7 +34,7 @@ class Rank(Base):
     id = Column(INTEGER, primary_key=True, comment='ID')
     proxy_id = Column(INTEGER, nullable=False, comment='代理ID')
     rank  = Column(INTEGER, nullable=False, comment='排名')
-    when = Column(TIMESTAMP, nullable=False, server_default=func.now(), comment='时间')
+    when = Column(TIMESTAMP, nullable=False, comment='时间')
 
 
 class Delay(Base):
@@ -43,7 +43,7 @@ class Delay(Base):
 
     id = Column(INTEGER, primary_key=True, comment='ID')
     proxy_id = Column(INTEGER, nullable=False, comment='代理ID')
-    when = Column(TIMESTAMP, nullable=False, server_default=func.now(), comment='时间')
+    when = Column(TIMESTAMP, nullable=False, comment='时间')
     value = Column(INTEGER, nullable=True, comment='延迟')
     
     
