@@ -47,7 +47,7 @@ def _request_page(server, local_port):
 
     proxy = get_proxy(local_port)
     try:
-        resp = session.get(website, stream=True, proxies=proxy, timeout=10)
+        resp = session.get(website, stream=True, proxies=proxy, timeout=10, verify=False)
         fetch_time = int(resp.elapsed.microseconds/1000)
 
         #ping_time = ping(server_addr, unit='ms')

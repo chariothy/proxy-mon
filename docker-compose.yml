@@ -9,7 +9,7 @@ services:
     working_dir: /app
     networks: 
       - default
-    restart: always
+    restart: unless-stopped
     logging:
       options:
         max-size: "10m"
