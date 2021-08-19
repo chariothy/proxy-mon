@@ -1,6 +1,10 @@
 from importlib import import_module
 import subprocess
 import requests
+requests.adapters.DEFAULT_RETRIES = 5
+session = requests.session()
+session.keep_alive = False
+
 import time, random
 from queue import Queue
 from multiprocessing import Pool as ProcessPool
@@ -43,7 +47,7 @@ def _request_page(server, local_port):
 
     proxy = get_proxy(local_port)
     try:
-        resp = requests.get(website, stream=True, proxies=proxy, timeout=10)
+        resp = session.get(website, stream=True, proxies=proxy, timeout=10)
         fetch_time = int(resp.elapsed.microseconds/1000)
 
         #ping_time = ping(server_addr, unit='ms')
