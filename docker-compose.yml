@@ -14,6 +14,7 @@ services:
       options:
         max-size: "10m"
     environment: 
+      - ENV=${ENV}
       - PROXY_RANK_MAIL_FROM=${MAIL_FROM:-"Henry TIAN <chariothy@gmail.com>"}
       - PROXY_RANK_MAIL_TO=${MAIL_TO:-"Henry TIAN <chariothy@gmail.com>"}
       - PROXY_RANK_SMTP_HOST=${SMTP_HOST:-smtp.gmail.com}
