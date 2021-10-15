@@ -68,7 +68,6 @@ def update_violin(data_path):
     return fig
 
     
-    
 def _update_curl(data):
     #print(data)
     if not data:
