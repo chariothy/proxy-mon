@@ -1,9 +1,9 @@
 version: "3"
 services:
-  proxy-mon:
+  proxy-rank:
     build: .
     image: proxy-mon
-    container_name: proxy-mon
+    container_name: proxy-dash
     volumes: 
       - /www/proxy-mon:/app
     working_dir: /app
@@ -14,36 +14,10 @@ services:
       options:
         max-size: "10m"
     environment: 
-      - PROXY_MON_MAIL_FROM=${MAIL_FROM:-"Henry TIAN <chariothy@gmail.com>"}
-      - PROXY_MON_MAIL_TO=${MAIL_TO:-"Henry TIAN <chariothy@gmail.com>"}
-      - PROXY_MON_SMTP_HOST=${SMTP_HOST:-smtp.gmail.com}
-      - PROXY_MON_SMTP_PORT=${SMTP_PORT:-25}
-      - PROXY_MON_SMTP_USER=${SMTP_USER:-chariothy@gmail.com}
-      - PROXY_MON_SMTP_PWD=${SMTP_PWD}
-      - PROXY_MON_MYSQL_USER=${MYSQL_USER}
-      - PROXY_MON_MYSQL_DB=${MYSQL_DB}
-      - PROXY_MON_MYSQL_PWD=${MYSQL_PWD}
-    command: python main.py
-  proxy-rank:
-    build: .
-    image: proxy-rank
-    container_name: proxy-rank
-    volumes: 
-      - /www/proxy-mon:/app
-    working_dir: /app
-    networks: 
-      - default
-    logging:
-      options:
-        max-size: "10m"
-    environment: 
       - PROXY_RANK_MAIL_FROM=${MAIL_FROM:-"Henry TIAN <chariothy@gmail.com>"}
       - PROXY_RANK_MAIL_TO=${MAIL_TO:-"Henry TIAN <chariothy@gmail.com>"}
       - PROXY_RANK_SMTP_HOST=${SMTP_HOST:-smtp.gmail.com}
       - PROXY_RANK_SMTP_PORT=${SMTP_PORT:-25}
       - PROXY_RANK_SMTP_USER=${SMTP_USER:-chariothy@gmail.com}
       - PROXY_RANK_SMTP_PWD=${SMTP_PWD}
-      - PROXY_RANK_MYSQL_USER=${MYSQL_USER}
-      - PROXY_RANK_MYSQL_DB=${MYSQL_DB}
-      - PROXY_RANK_MYSQL_PWD=${MYSQL_PWD}
     command: python server.py
