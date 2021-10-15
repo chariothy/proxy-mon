@@ -1,31 +1,21 @@
-from pandas.core.frame import DataFrame
-from utils import Util
-ut = Util('proxy-rank')
+from pandas import DataFrame
+from utils import ut, tmp_env
+from pybeans import utils as pu
 
-from model import Proxy, Delay, Rank, query_delay, query_proxy
 import pandas as pd
-from numpy import float64
 from datetime import datetime, timedelta
 
-import re
-reg_proxy_multi = re.compile(r'\|(\d\.?\d?)x(?:\||$)')
+#from model import Proxy, Delay, Rank, query_delay, query_proxy
 
 from premailer import transform
 from pybeans import today
 
-def my_finalize(thing):
-    if thing is None:
-        return ''
-    elif type(thing) in (float, float64):
-        return round(thing, 2)
-    else:
-        #ut.D(f'##### {type(thing)}')
-        return thing
 
-import os
-from jinja2 import Environment, FileSystemLoader
-tmp_env = Environment(loader=FileSystemLoader(os.getcwd() + '/templates'), finalize=my_finalize)
-
+rank_conditions = dict(
+    avg = dict(asc=True, weight=3),
+    std = dict(asc=True, weight=1),
+    lost = dict(asc=True, weight=3)
+)
 
 def clear_old_data(days:int=3):
     ut.D(f'############ 清除{days}天前的CURL数据 ############')
@@ -34,8 +24,24 @@ def clear_old_data(days:int=3):
     ut.session.query(Rank).where(Rank.when < (datetime.now()-timedelta(days = days*10))).delete()
     ut.session.commit()
     
+
+def report(data):
+    template = tmp_env.get_template('rank.html')
+    html = template.render(dict(
+        rank_conditions = rank_conditions,
+        data = data
+    ))
+    #su.D(html)
+    html = transform(html)
+    #print(html)
+    result = ut.send_email(f'代理服务器统计报告', html_body=html)
+    ut.D('发送邮件：', f'失败：{result}' if result else '成功')
     
-def rank():
+    
+def rank_v1():
+    import re
+    reg_proxy_multi = re.compile(r'\|(\d\.?\d?)x(?:\||$)')
+
     id_proxy = {}
     multi_proxies = {}
     proxies = query_proxy(ut.session).all()
@@ -135,14 +141,36 @@ def rank():
     if data:
         #TODO: Report all NONE proxy
         ut.session.commit()
-        template = tmp_env.get_template('rank.html')
-        html = template.render({'data': data})
-        #su.D(html)
-        html = transform(html)
-        #print(html)
-        ut.D('发送邮件：', ut.send_email(f'代理服务器统计报告', html_body=html))
+        report(data)
+
+
+def df_from_json(data_path:str):
+    result = pu.load_json(data_path)
+    df = pd.json_normalize(
+        result,
+        record_path=['raw'],
+        meta=['alias', 'id']
+    ).rename(columns={0: 'curl'})
+    return df
+
+
+def rank(df:DataFrame):
+    df_agg=df.groupby(['alias', 'id']).agg(avg=('curl','mean'),std=('curl','std'),valid=('curl','count'),total=('curl','size'))
+    df_agg['lost'] = df_agg['total'] - df_agg['valid']
+    df_agg.reset_index(inplace=True)
+    df_agg['curl_rank'] = 0
+    #print(df_agg)
     
+    for col in rank_conditions:
+        condition = rank_conditions[col]
+        percentile = f'{col}_pct'
+        df_agg[percentile] = df_agg[col].rank(method='min', ascending=condition['asc'])
+        df_agg['curl_rank'] += df_agg[percentile] * condition['weight']
+
+    return df_agg.sort_values(by=['curl_rank']).reset_index()
+    
+
 if __name__ == '__main__':
-    rank()
-    if os.environ.get('PROXY_RANK_ENV') == 'prod':
-        clear_old_data()
+    df_agg = rank(df_from_json('./data/20211015_133816.json'))
+    report(df_agg.head(4))
+    

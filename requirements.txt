@@ -1,12 +1,7 @@
-pandas
-fake-useragent
-colorama
+rich
+requests
 requests[socks]
-sqlalchemy
-mysql-connector-python
 pybeans>=1.3.0
-matplotlib
-seaborn
-scipy
-jinja2
+plotly
 premailer
+dash

@@ -11,45 +11,33 @@
     td.up { color:#ff0000;}
     thead td { text-align: center; }
 </style>
-{% for multi in data %}
 <table>
     <thead>
-        <tr class="cat">
-            <td colspan="4">{{multi}}倍速组</td>
+        <tr>
+            <td></td>
+            <td>权重={{ rank_conditions['avg']['weight'] }}</td>
+            <td>权重={{ rank_conditions['lost']['weight'] }}</td>
+            <td>权重={{ rank_conditions['std']['weight'] }}</td>
+            <td></td>
         </tr>
         <tr>
-            <td>类型</td>
-            <td>均值</td>
-            <td>中位数</td>
-            <td>超时占比</td>
-            <td>STD</td>
-            <td>有效样本数</td>
-            <td>样本数</td>
-            <td>得分</td>
-            <td>平均排名</td>
-            <td>本次排名</td>
-            <td>名称</td>
+            <td>服务器名称</td>
+            <td>均值(毫秒)</td>
+            <td>(10秒)超时次数</td>
+            <td>标准差</td>
+            <td>综合排名</td>
         </tr>
     </thead>
     <tbody>
-        {% for proxy in data[multi] %}
+        {% for _, proxy in data.iterrows() %}
         <tr>
-            <td>{{ proxy['type'] }}</td>
-            <td>{{ proxy['vmean'] }}</td>
-            <td>{{ proxy['vmed'] }}</td>
-            <td>{{ proxy['outper'] }}%</td>
+            <td>{{ proxy['alias'] }}</td>
+            <td>{{ proxy['avg'] }}</td>
+            <td>{{ proxy['lost'] }} / {{ proxy['total'] }}</td>
             <td>{{ proxy['std'] }}</td>
-            <td>{{ proxy['vcount'] }}</td>
-            <td>{{ proxy['count'] }}</td>
-            <td>{{ proxy['score'] }}</td>
-            <td>{{ proxy['arank'] }}</td>
-            <td class="score {{'up' if proxy['drank'] < 0 else ''}}">
-                {{ proxy['nrank'] }} {{ '' if proxy['drank'] == 0 else '({} {})'.format('↑' if proxy['drank'] < 0 else '↓', proxy['drank']|abs) }}
-            </td>
-            <td>{{ proxy['remark'] }}</td>
+            <td>{{ proxy['curl_rank'] | int }}</td>
         </tr>
         {% endfor %}
     </tbody>
 </table>
 <br>
-{% endfor %}

@@ -5,14 +5,31 @@ from pybeans import AppTool
 import json
 import time
 import random
-import io
+import subprocess
 import socket
 from contextlib import closing
+from rich.console import Console
+console = Console()
 
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
-from sqlalchemy.ext.declarative import declarative_base
-from colorama import Fore, Back, init, Style
+import requests
+requests.adapters.DEFAULT_RETRIES = 5
+session = requests.session()
+session.keep_alive = False
+
+
+from jinja2 import Environment, FileSystemLoader
+
+def my_finalize(thing):
+    from numpy import float64
+    if thing is None:
+        return ''
+    elif type(thing) in (float, float64):
+        return round(thing, 2)
+    else:
+        #ut.D(f'##### {type(thing)}')
+        return thing
+
+tmp_env = Environment(loader=FileSystemLoader(os.getcwd() + '/templates'), finalize=my_finalize)
 
 
 class Util(AppTool):
@@ -23,56 +40,6 @@ class Util(AppTool):
         super(Util, self).__init__(name, os.getcwd())
         self._session = None
 
-    
-    @property
-    def conn(self):
-        return 'mysql+mysqlconnector://{c[user]}:{c[pwd]}@{c[host]}:{c[port]}/{c[db]}?ssl_disabled=True' \
-            .format(c=self['mysql'])
-        
-        
-    @property
-    def session(self):
-        """
-        Lazy loading
-        """
-        if self._session:
-            return self._session
-        
-        print(self.conn)
-        assert(self['mysql'] is not None)
-        engine = create_engine(
-            self.conn, 
-            pool_size=20, 
-            max_overflow=0, 
-            echo=self['log.sql'] == 1
-        )
-        from model import Base, Proxy, Delay
-        Base.metadata.create_all(engine, checkfirst=True)
-        self._session = sessionmaker(bind=engine)()
-        return self._session
-    
-    
-    def D(self, *args):
-        self.print('DEBUG', *args)
-
-
-    def I(self, *args):
-        self.print('INFO', *args)
-
-
-    def print(self, level, *args):
-        local_time = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
-        if level == 'DEBUG':
-            color = Fore.YELLOW
-        elif level == 'INFO':
-            color = Fore.GREEN
-        elif level == 'ERROR':
-            color = Fore.RED
-        else:
-            color = Fore.BLUE
-        print(color, '{} [{}] - {} - '.format(local_time, self.name, level), *args)
-        print(Style.RESET_ALL, flush=True)
-
 
     def random(self):
         return random.Random().random()
@@ -82,10 +49,6 @@ class Util(AppTool):
         time.sleep(sec)
         
     
-    def timestamp(self):
-        return time.time_ns()
-    
-        
     def env(self, key:str='ENV', default=''):
         env = os.environ.get(key, default=default)
         self.D(f'>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> ENV = {env} <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<')
@@ -97,25 +60,6 @@ class Util(AppTool):
         return dt.strftime(a_date,to_format)
     
         
-    def extract_str(self, reg:Pattern, content:str, default=None):
-        """从字符串中提取文本信息
-
-        Args:
-            reg (Pattern): 编译后的正则对象
-            content (str): 要提取内容的字符串
-            default (str|None)
-        """
-        match = reg.search(content)
-        if match:
-            groups = match.groups()
-            if groups:
-                return groups[0].strip()
-            else:
-                return default
-        else:
-            return default
-    
-    
     def find_free_port(self):
         with closing(socket.socket(socket.AF_INET, socket.SOCK_STREAM)) as s:
             s.bind(('', 0))
@@ -123,4 +67,45 @@ class Util(AppTool):
             return s.getsockname()[1]
         
 
+    def run(self, cmd, echo_cmd=False):
+        try:
+            if echo_cmd:
+                print(cmd)
+            result = subprocess.check_output(cmd, shell=True, stderr=subprocess.STDOUT)
+        except subprocess.CalledProcessError as e:
+            result = e.output       # Output generated before error
+            #code      = e.returncode   # Return code
+        return str(result, encoding = "utf-8", errors='ignore')
+    
+    
+    def request(self, url):
+        resp = None
+        ping = None
+
+        try:
+            resp = session.get(url, stream=True, timeout=10)
+            fetch_time = int(resp.elapsed.microseconds/1000)
+
+            #ping_time = ping(server_addr, unit='ms')
+            if resp.status_code == 200:
+                self.D(f'[√] {url}, fetch={fetch_time} ms.')
+                ping = fetch_time
+                # return (fetch_time + ping_time) / 2
+            else:
+                self.I(f'[×] {url}, status={resp.status_code}, timeout.')
+        except (requests.exceptions.ReadTimeout, requests.exceptions.ConnectionError) as ex:
+            self.E(f'[×] {url}, {ex}')
+            # logger.debug(ex)
+        
+        # sleep 乘以倍速，高倍速的测试次数少些
+        sleep = random.random() * 3
+        self.D(f'zZZ 睡眠{sleep}秒 ...')
+        time.sleep(sleep)
+        return ping
+
 ut = Util('proxy-mon')
+
+
+if __name__ == '__main__':
+    from pybeans import utils as pu
+    print(pu.timestamp())

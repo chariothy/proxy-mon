@@ -28,23 +28,8 @@ CONFIG = {
         'db': 'logs/benchmark.dat'
     },
     'website': 'https://www.google.com/',
-    'mysql': {
-        'host': 'mysql',
-        'port': 3306,
-        'db': 'test',
-        'user': 'test',
-        'pwd': 'test'
-    },
-    'proxy': {
-        'v2ray': {
-            'bin': 'v2ray',
-            'config_dir': '/app/logs',
-            'vendor': 'fastlink',
-            'subscribe': 'https://fastlink.ws/link/Q9J0Vmc3ffdhr3r?sub=3'
-        },
-        'ss': {
-            'bin': 'ss-local'
-        }
-    },
-    'max_client': 0,      # 同时使用的客户端，0 - 无限
+    'curl_count': 10,
+    'gateway': '10.8.6.1',
+    'scp_data_dir': 'henry@10.8.9.88:/www/proxy-mon/data/',
+    'top_n': 4
 }

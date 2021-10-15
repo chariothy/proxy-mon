@@ -46,4 +46,4 @@ services:
       - PROXY_RANK_MYSQL_USER=${MYSQL_USER}
       - PROXY_RANK_MYSQL_DB=${MYSQL_DB}
       - PROXY_RANK_MYSQL_PWD=${MYSQL_PWD}
-    command: python rank.py
+    command: python server.py
