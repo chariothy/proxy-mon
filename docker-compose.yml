@@ -10,6 +10,8 @@ services:
     networks: 
       - default
     restart: unless-stopped
+    ports: 
+      - ${PROXY_MON_PORT:-8050}:8050
     logging:
       options:
         max-size: "10m"
