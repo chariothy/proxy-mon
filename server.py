@@ -17,6 +17,7 @@ result_list = glob.glob('./data/*.json')
 
 df = None
 app = dash.Dash(__name__)
+app.title = 'Proxy benchmark'
 
 options = []
 for result in result_list:
@@ -97,4 +98,8 @@ def update_curl(hoverData, clickData):
 
 
 if __name__ == '__main__':
-    app.run_server(host='0.0.0.0', debug=(ut.env()!='prod'))
+    is_prod = ut.env() == 'prod'
+    app.run_server(
+        host='0.0.0.0' if is_prod else '127.0.0.1', 
+        debug=not is_prod
+    )
