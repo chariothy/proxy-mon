@@ -101,5 +101,5 @@ if __name__ == '__main__':
     is_prod = ut.env() == 'prod'
     app.run_server(
         host='0.0.0.0' if is_prod else '127.0.0.1', 
-        debug=True, extra_files=['./data/*.json']
+        debug=not is_prod
     )
