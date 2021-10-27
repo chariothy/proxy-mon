@@ -9,6 +9,7 @@ from datetime import datetime, timedelta
 
 from premailer import transform
 from pybeans import today
+from notify import notify_by_ding_talk
 
 
 rank_conditions = dict(
@@ -36,6 +37,8 @@ def report(data):
     #print(html)
     result = ut.send_email(f'代理服务器统计报告', html_body=html)
     ut.D('发送邮件：', f'失败：{result}' if result else '成功')
+    
+    notify_by_ding_talk(data)
     
     
 def rank_v1():

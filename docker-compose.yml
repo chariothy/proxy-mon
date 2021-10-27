@@ -23,4 +23,6 @@ services:
       - PROXY_RANK_SMTP_PORT=${SMTP_PORT:-25}
       - PROXY_RANK_SMTP_USER=${SMTP_USER:-chariothy@gmail.com}
       - PROXY_RANK_SMTP_PWD=${SMTP_PWD}
+      - PROXY_RANK_DINGTALK_TOKEN=${DINGTALK_TOKEN}
+      - PROXY_RANK_DINGTALK_SECRET=${DINGTALK_SECRET}
     command: python server.py

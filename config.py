@@ -23,6 +23,10 @@ CONFIG = {
         'user': '15050506668@163.com',
         'pwd': '123456'
     },
+    'dingtalk': {                       # 通过钉钉机器人发送通知，具体请见钉钉机器人文档
+        'token': 'DINGTALK_BOT_TOKEN',
+        'secret' : 'DINGTALK_BOT_SECRET' # 钉钉机器人的三种验证方式之一为密钥验证
+    },
     'use_proxy': False,
     'sqlite': {
         'db': 'logs/benchmark.dat'
