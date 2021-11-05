@@ -19,6 +19,8 @@ df = None
 app = dash.Dash(__name__)
 app.title = 'Proxy benchmark'
 
+history_df = pd.read_csv(ut['history_path'], parse_dates=['date'])
+
 options = []
 for result in result_list:
     options.append(dict(
@@ -27,14 +29,15 @@ for result in result_list:
     ))
 options.sort(key=lambda x: x['value'], reverse=True)
 app.layout = html.Div(id = 'parent', children = [
-    html.H1(id = 'H1', children = 'Proxy curl Google', style = {'textAlign':'center',\
-                                            'marginTop':40,'marginBottom':40}),
-
-        dcc.Dropdown( id = 'dropdown',
+    html.H1(id = 'H1', children = 'Proxy curl Google', style = {'textAlign':'center', 'marginTop':10,'marginBottom':10}),
+    dcc.Dropdown( id = 'dropdown',
         options = options,
-        value = options[0]['value']),
-        dcc.Graph(id = 'curl_mix'),
-        dcc.Graph(id = 'curl_curve'),
+        value = options[0]['value'],
+        style = {'marginTop':0,'marginBottom':0}
+    ),
+    dcc.Graph(id = 'curl_mix', style = {'marginTop':0,'marginBottom':0}),
+    dcc.Graph(id = 'curl_curve', style = {'marginTop':0,'marginBottom':0}, config={'displayModeBar': False}),
+    dcc.Graph(id = 'curl_history', style = {'marginTop':0,'marginBottom':0}, config={'displayModeBar': False})
     ])
 
     
@@ -72,13 +75,15 @@ def update_violin(data_path):
 def _update_curl(data):
     #print(data)
     if not data:
-        return px.scatter()
+        return px.scatter(template='plotly_white')
     alias = data['points'][0]['x']
     df_alias = df[df.alias==alias].reset_index(drop=True)
     #print(df_alias)
-    fig = px.scatter(df_alias, y='curl', text=df_alias['curl'])
-    fig.update_traces(mode='lines+markers+text', textposition="bottom right")
-    return fig
+    
+    fig_curl = px.scatter(df_alias, y='curl', text=df_alias['curl'], labels={"curl": "Curl延迟"}, template='plotly_white')
+    fig_curl.update_traces(mode='lines+markers+text', textposition="bottom right")
+    
+    return fig_curl
     
 
 @app.callback(
@@ -95,6 +100,26 @@ def update_curl(hoverData, clickData):
     # }, indent=2, ensure_ascii=False)
     #print(ctx_json)
     return _update_curl(hoverData if hoverData else clickData)
+
+
+def _update_history(data):
+    #print(data)
+    if not data:
+        return px.scatter()
+    alias = data['points'][0]['x']
+    df_alias = history_df[history_df.alias==alias]
+    #print(df_alias)
+    fig_hist = px.scatter(df_alias, x='date', y='pos', text=df_alias['pos'], labels={"pos": "历史排名"})
+    fig_hist.update_traces(mode='lines+markers+text', textposition="bottom right")
+    return fig_hist
+
+
+@app.callback(
+    dash.dependencies.Output('curl_history', 'figure'),
+    dash.dependencies.Input('curl_mix', 'hoverData'),
+    dash.dependencies.Input('curl_mix', 'clickData'))
+def update_history(hoverData, clickData):
+    return _update_history(hoverData if hoverData else clickData)
 
 
 if __name__ == '__main__':

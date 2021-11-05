@@ -2,7 +2,7 @@ from datetime import datetime
 from utils import ut
 from pybeans import utils as pu
 from openwrt import ShadowSocksR
-from rank import df_from_json, report, rank
+from rank import df_from_json, history, report, rank, history
 
 ssr = ShadowSocksR(ut['gateway'])
     
@@ -22,11 +22,10 @@ def curl():
         server['raw'] = raw_curl
         result.append(server)
         pu.dump_json(filename, result)
-    ut.run(f'scp {filename} {ut["scp_data_dir"]}')
+    ut.run(f'scp {filename} {ut["scp_data_dir"]}')  # 复制到网站服务器
     return filename
 
 
-    
 if __name__ == '__main__':
     start = datetime.now()
     filename = curl()
@@ -35,9 +34,9 @@ if __name__ == '__main__':
     elapsed = (end - start).microseconds
     ut.I(f'Elapsed {elapsed / 1000 / 60} minutes during running curl()')
     df = df_from_json(filename)
-    print(df)
     df_agg = rank(df)
     print(df_agg)
+    history(df_agg)
     
     top_n = ut['top_n']
     report(df_agg.head(top_n))

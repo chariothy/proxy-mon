@@ -35,5 +35,6 @@ CONFIG = {
     'curl_count': 10,
     'gateway': '10.8.6.1',
     'scp_data_dir': 'henry@10.8.9.88:/www/proxy-mon/data/',
-    'top_n': 4
+    'top_n': 4,
+    'history_path': './data/history.csv'
 }

@@ -11,8 +11,11 @@ from premailer import transform
 from pybeans import today
 from notify import notify_by_ding_talk
 
+import glob
+import re
+REG_DATE = re.compile(r'(\d{8})_\d{6}.json')
 
-rank_conditions = dict(
+RANK_CONDITIONS = dict(
     avg = dict(asc=True, weight=3),
     std = dict(asc=True, weight=1),
     lost = dict(asc=True, weight=3)
@@ -29,7 +32,7 @@ def clear_old_data(days:int=3):
 def report(data):
     template = tmp_env.get_template('rank.html')
     html = template.render(dict(
-        rank_conditions = rank_conditions,
+        rank_conditions = RANK_CONDITIONS,
         data = data
     ))
     #su.D(html)
@@ -154,8 +157,22 @@ def df_from_json(data_path:str):
         record_path=['raw'],
         meta=['alias', 'id']
     ).rename(columns={0: 'curl'})
+    #print(df)
     return df
 
+
+def history(df_agg):
+    history_path = ut['history_path']
+    today_int = int(pu.today('%Y%m%d'))
+    dfh=pd.read_csv(history_path, index_col=0)
+    today_cnt = dfh[dfh.date==today_int].pos.count()
+    if today_cnt == 0:
+        df_agg['date'] = today_int
+        df_agg['pos'] = df_agg.index
+        all_frame = pd.concat([dfh, df_agg])
+        all_frame.to_csv(history_path)
+        ut.run(f'scp {history_path} {ut["scp_data_dir"]}')  # 复制到网站服务器
+    
 
 def rank(df:DataFrame):
     df_agg=df.groupby(['alias', 'id']).agg(avg=('curl','mean'),std=('curl','std'),valid=('curl','count'),total=('curl','size'))
@@ -164,8 +181,8 @@ def rank(df:DataFrame):
     df_agg['curl_rank'] = 0
     #print(df_agg)
     
-    for col in rank_conditions:
-        condition = rank_conditions[col]
+    for col in RANK_CONDITIONS:
+        condition = RANK_CONDITIONS[col]
         percentile = f'{col}_pct'
         df_agg[percentile] = df_agg[col].rank(method='min', ascending=condition['asc'])
         df_agg['curl_rank'] += df_agg[percentile] * condition['weight']
@@ -174,6 +191,8 @@ def rank(df:DataFrame):
     
 
 if __name__ == '__main__':
-    df_agg = rank(df_from_json('./data/20211015_133816.json'))
-    report(df_agg.head(4))
+    df_agg = rank(df_from_json('./data/20211105_164054.json'))
+    history(df_agg)
+    #report(df_agg.head(4))
+    
     
