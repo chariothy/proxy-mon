@@ -36,5 +36,6 @@ CONFIG = {
     'gateway': '10.8.6.1',
     'scp_data_dir': 'henry@10.8.9.88:/www/proxy-mon/data/',
     'top_n': 4,
-    'history_path': './data/history.csv'
+    'history_path': './data/history.csv',
+    'alias_formater': lambda s: s.replace('0.7倍丨', '')
 }

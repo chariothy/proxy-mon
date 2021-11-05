@@ -19,7 +19,16 @@ df = None
 app = dash.Dash(__name__)
 app.title = 'Proxy benchmark'
 
+
+def format_alias(row):
+    row.alias = ut['alias_formater'](row.alias)
+    return row
+
+
 history_df = pd.read_csv(ut['history_path'], parse_dates=['date'])
+history_df.pos += 1
+history_df = history_df.apply(format_alias, axis=1)
+history_fig = px.line(history_df, x='date', y='pos', color='alias', markers=True)
 
 options = []
 for result in result_list:
@@ -37,20 +46,26 @@ app.layout = html.Div(id = 'parent', children = [
     ),
     dcc.Graph(id = 'curl_mix', style = {'marginTop':0,'marginBottom':0}),
     dcc.Graph(id = 'curl_curve', style = {'marginTop':0,'marginBottom':0}, config={'displayModeBar': False}),
-    dcc.Graph(id = 'curl_history', style = {'marginTop':0,'marginBottom':0}, config={'displayModeBar': False})
+    dcc.Graph(id = 'server_history', style = {'marginTop':0,'marginBottom':0}, config={'displayModeBar': False}),
+    dcc.Graph(id = 'all_history', style = {'marginTop':0,'marginBottom':0}, figure=history_fig)
     ])
 
     
+
 @app.callback(Output(component_id='curl_mix', component_property= 'figure'),
               [Input(component_id='dropdown', component_property= 'value')])
 def update_violin(data_path):
     global df
     #print(data_path)
     df = df_from_json(data_path)
+    df = df.apply(format_alias, axis=1)
+
     df_agg = rank(df)
+    df_agg['pos'] = df_agg.index + 1
+    df_agg = df_agg.apply(format_alias, axis=1)
 
     fig = make_subplots(
-        rows=3, cols=1,
+        rows=5, cols=1,
         shared_xaxes=True,
         vertical_spacing=0
     )
@@ -68,6 +83,15 @@ def update_violin(data_path):
                text=df_agg['lost'], textposition='auto', textangle=0),
         row=3, col=1
     )
+    fig.add_trace(
+        go.Bar(x=df_agg['alias'], y=df_agg['pos'], name='Rank', marker_color='purple',
+               text=df_agg['pos'], textposition='auto', textangle=0),
+        row=4, col=1
+    )
+    fig.add_trace(
+        go.Violin(x=history_df['alias'], y=history_df['pos'], name='History', marker_color='gray'),
+        row=5, col=1
+    )
     fig.update_layout(barmode='relative')
     return fig
 
@@ -80,7 +104,7 @@ def _update_curl(data):
     df_alias = df[df.alias==alias].reset_index(drop=True)
     #print(df_alias)
     
-    fig_curl = px.scatter(df_alias, y='curl', text=df_alias['curl'], labels={"curl": "Curl延迟"}, template='plotly_white')
+    fig_curl = px.scatter(df_alias, y='curl', text=df_alias['curl'], title=f"{alias} (Curl延迟)", template='plotly_white')
     fig_curl.update_traces(mode='lines+markers+text', textposition="bottom right")
     
     return fig_curl
@@ -109,17 +133,18 @@ def _update_history(data):
     alias = data['points'][0]['x']
     df_alias = history_df[history_df.alias==alias]
     #print(df_alias)
-    fig_hist = px.scatter(df_alias, x='date', y='pos', text=df_alias['pos'], labels={"pos": "历史排名"})
+    fig_hist = px.scatter(df_alias, x='date', y='pos', text=df_alias['pos'], title=f"{alias} (历史排名)")
     fig_hist.update_traces(mode='lines+markers+text', textposition="bottom right")
     return fig_hist
 
 
 @app.callback(
-    dash.dependencies.Output('curl_history', 'figure'),
+    dash.dependencies.Output('server_history', 'figure'),
     dash.dependencies.Input('curl_mix', 'hoverData'),
     dash.dependencies.Input('curl_mix', 'clickData'))
 def update_history(hoverData, clickData):
     return _update_history(hoverData if hoverData else clickData)
+
 
 
 if __name__ == '__main__':
