@@ -37,7 +37,7 @@ class Util(AppTool):
     公用代码
     """
     def __init__(self, name):
-        super(Util, self).__init__(name, os.getcwd())
+        super(Util, self).__init__(name)
         self._session = None
 
 
@@ -99,7 +99,7 @@ class Util(AppTool):
         
         # sleep 乘以倍速，高倍速的测试次数少些
         sleep = random.random() * 3
-        self.D(f'zZZ 睡眠{sleep}秒 ...')
+        self.D(f'.zZ 睡眠{sleep}秒 ...')
         time.sleep(sleep)
         return ping
 

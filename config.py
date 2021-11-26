@@ -37,5 +37,5 @@ CONFIG = {
     'scp_data_dir': 'henry@10.8.9.88:/www/proxy-mon/data/',
     'top_n': 4,
     'history_path': './data/history.csv',
-    'alias_formater': lambda s: s.replace('0.7倍丨', '')
+    'after_scp_data': 'ssh henry@10.8.9.88 docker restart proxy-dash'
 }

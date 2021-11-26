@@ -11,7 +11,7 @@ from premailer import transform
 from pybeans import today
 from notify import notify_by_ding_talk
 
-import glob
+import os
 import re
 REG_DATE = re.compile(r'(\d{8})_\d{6}.json')
 
@@ -162,17 +162,22 @@ def df_from_json(data_path:str):
 
 
 def history(df_agg):
-    history_path = ut['history_path']
     today_int = int(pu.today('%Y%m%d'))
-    dfh=pd.read_csv(history_path, index_col=0)
-    today_cnt = dfh[dfh.date==today_int].pos.count()
-    if today_cnt == 0:
-        df_agg['date'] = today_int
-        df_agg['pos'] = df_agg.index
-        all_frame = pd.concat([dfh, df_agg])
-        all_frame.to_csv(history_path)
-        ut.run(f'scp {history_path} {ut["scp_data_dir"]}')  # 复制到网站服务器
-    
+    df_agg['date'] = today_int
+    df_agg['pos'] = df_agg.index
+    today_cnt = 0
+    history_path = ut['history_path']
+    if os.path.exists(history_path):
+        dfh=pd.read_csv(history_path, index_col=0)
+        today_cnt = dfh[dfh.date==today_int].pos.count()
+        if today_cnt == 0:
+            all_frame = pd.concat([df_agg, dfh])
+            all_frame.to_csv(history_path)
+    else:
+        df_agg.to_csv(history_path)
+    ut.run(f'scp {history_path} {ut["scp_data_dir"]}')  # 复制到网站服务器
+    ut.run(ut['after_scp_data'])
+
 
 def rank(df:DataFrame):
     df_agg=df.groupby(['alias', 'id']).agg(avg=('curl','mean'),std=('curl','std'),valid=('curl','count'),total=('curl','size'))
@@ -191,7 +196,7 @@ def rank(df:DataFrame):
     
 
 if __name__ == '__main__':
-    df_agg = rank(df_from_json('./data/20211105_164054.json'))
+    df_agg = rank(df_from_json('./data/20211111_092739.json'))
     history(df_agg)
     #report(df_agg.head(4))
     

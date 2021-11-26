@@ -20,14 +20,8 @@ app = dash.Dash(__name__)
 app.title = 'Proxy benchmark'
 
 
-def format_alias(row):
-    row.alias = ut['alias_formater'](row.alias)
-    return row
-
-
 history_df = pd.read_csv(ut['history_path'], parse_dates=['date'])
 history_df.pos += 1
-history_df = history_df.apply(format_alias, axis=1)
 history_fig = px.line(history_df, x='date', y='pos', color='alias', markers=True)
 
 options = []
@@ -58,11 +52,9 @@ def update_violin(data_path):
     global df
     #print(data_path)
     df = df_from_json(data_path)
-    df = df.apply(format_alias, axis=1)
 
     df_agg = rank(df)
     df_agg['pos'] = df_agg.index + 1
-    df_agg = df_agg.apply(format_alias, axis=1)
 
     fig = make_subplots(
         rows=5, cols=1,
