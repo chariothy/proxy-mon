@@ -169,7 +169,9 @@ def history(df_agg):
     history_path = ut['history_path']
     if os.path.exists(history_path):
         dfh = pd.read_csv(history_path, index_col=0)
-        dfh = dfh[dfh.alias.isin(df_agg.alias)] # 去除更新订阅后消失的节点
+        dfh = dfh[dfh.alias.isin(df_agg.alias)] # 去除更新订阅后消失的节点，！记得换机场时要备份history，否则全部
+        if dfh.pos.count() == 0:
+            raise RuntimeError('History中不存在任何新节点')
         today_cnt = dfh[dfh.date==today_int].pos.count()
         if today_cnt == 0:
             all_frame = pd.concat([df_agg, dfh])

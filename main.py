@@ -26,18 +26,24 @@ def curl():
     return filename
 
 
+def mon():
+    try:
+        start = datetime.now()
+        filename = curl()
+        #filename='./data/20211015_133816.json'
+        end = datetime.now()
+        elapsed = (end - start).microseconds
+        ut.I(f'Elapsed {elapsed / 1000 / 60} minutes during running curl()')
+        df = df_from_json(filename)
+        df_agg = rank(df)
+        ut.D(df_agg)
+        history(df_agg)
+        
+        top_n = ut['top_n']
+        report(df_agg.head(top_n))
+        ssr.set_server(df_agg.at[top_n-1, 'id'], df_agg.at[top_n-1, 'alias'])
+    except Exception:
+        ut.ex('测试代理节点出错')
+
 if __name__ == '__main__':
-    start = datetime.now()
-    filename = curl()
-    #filename='./data/20211015_133816.json'
-    end = datetime.now()
-    elapsed = (end - start).microseconds
-    ut.I(f'Elapsed {elapsed / 1000 / 60} minutes during running curl()')
-    df = df_from_json(filename)
-    df_agg = rank(df)
-    print(df_agg)
-    history(df_agg)
-    
-    top_n = ut['top_n']
-    report(df_agg.head(top_n))
-    ssr.set_server(df_agg.at[top_n-1, 'id'], df_agg.at[top_n-1, 'alias'])
+    mon()
