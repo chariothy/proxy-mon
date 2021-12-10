@@ -168,7 +168,8 @@ def history(df_agg):
     today_cnt = 0
     history_path = ut['history_path']
     if os.path.exists(history_path):
-        dfh=pd.read_csv(history_path, index_col=0)
+        dfh = pd.read_csv(history_path, index_col=0)
+        dfh = dfh[dfh.alias.isin(df_agg.alias)] # 去除更新订阅后消失的节点
         today_cnt = dfh[dfh.date==today_int].pos.count()
         if today_cnt == 0:
             all_frame = pd.concat([df_agg, dfh])
