@@ -22,7 +22,7 @@ app.title = 'Proxy benchmark'
 
 history_df = pd.read_csv(ut['history_path'], parse_dates=['date'])
 history_df.pos += 1
-#history_fig = px.line(history_df, x='date', y='pos', color='alias', markers=True)
+history_fig = px.line(history_df, x='date', y='pos', color='alias', markers=True)
 
 options = []
 for result in result_list:
@@ -41,7 +41,7 @@ app.layout = html.Div(id = 'parent', children = [
     dcc.Graph(id = 'curl_mix', style = {'marginTop':0,'marginBottom':0}),
     dcc.Graph(id = 'curl_curve', style = {'marginTop':0,'marginBottom':0}, config={'displayModeBar': False}),
     dcc.Graph(id = 'server_history', style = {'marginTop':0,'marginBottom':0}, config={'displayModeBar': False}),
-#    dcc.Graph(id = 'all_history', style = {'marginTop':0,'marginBottom':0}, figure=history_fig)
+    dcc.Graph(id = 'all_history', style = {'marginTop':0,'marginBottom':0}, figure=history_fig)
     ])
 
     
