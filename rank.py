@@ -11,6 +11,7 @@ from premailer import transform
 from pybeans import today
 from notify import notify_by_ding_talk
 
+import arrow
 import os
 import re
 REG_DATE = re.compile(r'(\d{8})_\d{6}.json')
@@ -168,10 +169,13 @@ def history(df_agg):
     today_cnt = 0
     history_path = ut['history_path']
     if os.path.exists(history_path):
-        dfh = pd.read_csv(history_path, index_col=0)
-        dfh = dfh[dfh.alias.isin(df_agg.alias)] # 去除更新订阅后消失的节点，！记得换机场时要备份history，否则全部
+        dfh = pd.read_csv(history_path, index_col=0, parse_dates=['date'])
+        # 去除更新订阅后消失的节点，！记得换机场时要备份history，否则会被全部自动删除
+        dfh = dfh[dfh.alias.isin(df_agg.alias)]
         if dfh.pos.count() == 0:
             raise RuntimeError('History中不存在任何新节点')
+        # 只保留最近一个月的记录
+        dfh = dfh[dfh.date>arrow.now().shift(months=-1).format('YYYY-MM-DD')]
         today_cnt = dfh[dfh.date==today_int].pos.count()
         if today_cnt == 0:
             all_frame = pd.concat([df_agg, dfh])
