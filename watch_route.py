@@ -11,6 +11,7 @@ from rich.console import Console
 console = Console()
 
 from pybeans import utils as ut
+from openwrt import ShadowSocksR
 
 TITLE = 'CHANGE ROUTE'
 os.system(f'title {TITLE}')
@@ -52,11 +53,10 @@ GOOGLE_TIMEOUT_CNT = 0
 VBOX_PATH = r'C:\Program Files\Oracle\VirtualBox\VBoxManage.exe'
 ROUTER_VM_NAME = 'router'
 
-REG_SSR_LIST = re.compile(r'\[\d+\] shadowsocksr\.(\w+)\.alias=\'(.+)\'')
-REG_SSR_CURRENT = re.compile(r'shadowsocksr\.\w+\.global_server=\'(.+)\'')
 SS_GATEWAY = '10.8.9.1'
-SS_SERVERS = []
 
+SSR = ShadowSocksR(SS_GATEWAY)
+SSR.get_servers()
 
 def run(cmd, echo_cmd=False):
     try:
@@ -193,23 +193,6 @@ def toast(title, msg, duration):
       pass
 
 
-def get_servers():
-    global SS_SERVERS
-    ut.run(f'scp C:/projects/python/proxy-mon/bin/shadowsocksr.sh root@{SS_GATEWAY}:/tmp/shadowsocksr.sh')
-    result = ut.run(f'ssh root@{SS_GATEWAY} "chmod +x /tmp/shadowsocksr.sh && /tmp/shadowsocksr.sh"')
-    SS_SERVERS = REG_SSR_LIST.findall(result)
-    console.print(SS_SERVERS)
-
-
-def get_current_server():
-    result = ut.run(f'ssh root@{SS_GATEWAY} "uci show shadowsocksr.@global[0].global_server"')
-    ss_current = REG_SSR_CURRENT.findall(result)[0]
-    for server in SS_SERVERS:
-        id, alias = server
-        if id == ss_current:
-            return alias
-
-
 def start():
     global BAIDU_TIMEOUT_CNT, GOOGLE_TIMEOUT_CNT, REAL_IF_NUM, PROXY_IF_NUM, MAX_CURL_TIME, MIN_CURL_TIME
     if not is_router_running():
@@ -222,7 +205,7 @@ def start():
     real_gw_pos = ipconfig.find(REAL_GW)
 
     sleep_sec = 5
-    print(f'当前节点：{get_current_server()}')
+    console.print(f'当前节点：[blink bright_yellow]{SSR.get_current_server()[-1]}[/blink bright_yellow]')
     while real_ip_pos >= 0 and real_gw_pos >= 0:
         route_table = run('route print')
         if_map = get_if_map(route_table)
@@ -271,7 +254,7 @@ def start():
                   else:
                       print(Fore.RED, f'【百度】可连接，延迟{curl_baidu_time}', Style.RESET_ALL, flush=True)
                       BAIDU_TIMEOUT_CNT = 0
-                print(f'当前节点：{get_current_server()}')
+                console.print(f'当前节点：[blink bright_yellow]{SSR.get_current_server()[-1]}[/blink bright_yellow]')
             else:
                 GOOGLE_TIMEOUT_CNT = 0
                 BAIDU_TIMEOUT_CNT = 0
@@ -293,7 +276,6 @@ def start():
 
 if __name__ == '__main__':
     #start_router()
-    get_servers()
     try:
       start()
     except Exception as ex:

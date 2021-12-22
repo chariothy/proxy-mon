@@ -3,6 +3,8 @@ from utils import ut
 import re
 
 REG_SSR_SERVER = re.compile(r'\[\d+\] shadowsocksr\.(\w+)\.alias=\'(.+)\'')
+REG_SSR_CURRENT = re.compile(r'shadowsocksr\.\w+\.global_server=\'(.+)\'')
+REG_SSR_LIST = re.compile(r'\[\d+\] shadowsocksr\.(\w+)\.alias=\'(.+)\'')
 
 class ShadowSocksR(object):
     def __init__(self, gateway:str) -> None:
@@ -17,6 +19,15 @@ class ShadowSocksR(object):
             result = ut.run(f'ssh root@{self.gateway} "chmod +x /tmp/shadowsocksr.sh && /tmp/shadowsocksr.sh"')
             self.servers = REG_SSR_SERVER.findall(result)
             
+    
+    def get_current_server(self):
+        self.get_servers()
+        result = ut.run(f'ssh root@{self.gateway} "uci show shadowsocksr.@global[0].global_server"')
+        ss_current = REG_SSR_CURRENT.findall(result)[0]
+        for server in self.servers:
+            id, alias = server
+            if id == ss_current:
+                return server
     
     def run(self):
         self.get_servers()
