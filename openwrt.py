@@ -23,7 +23,7 @@ class ShadowSocksR(object):
         for i, server in enumerate(self.servers):
             id, alias = server
             ut.I(f'Switching to [{i+1}] {alias} ...')
-            result = ut.run(f'ssh root@{self.gateway} "uci set shadowsocksr.@global[0].global_server=\'{id}\' && uci commit shadowsocksr && /etc/init.d/shadowsocksr restart"')
+            result = self.set_server(id, alias)
             print(result)
             print(f'Sleeping 3 seconds ...')
             ut.sleep(3)
@@ -31,9 +31,8 @@ class ShadowSocksR(object):
             
     
     def set_server(self, id:str, alias:str=None):
-        print(f'Switching to {alias} ...')
         result = ut.run(f'ssh root@{self.gateway} "uci set shadowsocksr.@global[0].global_server=\'{id}\' && uci commit shadowsocksr && /etc/init.d/shadowsocksr restart"')
-        print(result)
+        return result
             
 
 
