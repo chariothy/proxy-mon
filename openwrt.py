@@ -27,6 +27,8 @@ class ShadowSocksR(object):
         for server in self.servers:
             id, alias = server
             if id == ss_current:
+                self.id = id
+                self.alias = alias
                 return server
     
     def run(self):

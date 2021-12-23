@@ -10,7 +10,7 @@ from colorama import Fore, Back, init, Style
 from rich.console import Console
 console = Console()
 
-from pybeans import utils as ut
+from utils import ut
 from openwrt import ShadowSocksR
 
 TITLE = 'CHANGE ROUTE'
@@ -53,7 +53,7 @@ GOOGLE_TIMEOUT_CNT = 0
 VBOX_PATH = r'C:\Program Files\Oracle\VirtualBox\VBoxManage.exe'
 ROUTER_VM_NAME = 'router'
 
-SS_GATEWAY = '10.8.9.1'
+SS_GATEWAY = ut['gateways.admin']
 
 SSR = ShadowSocksR(SS_GATEWAY)
 SSR.get_servers()
@@ -237,7 +237,7 @@ def start():
             curl_google_time = _request_page('https://www.google.com')
             if curl_google_time is None:
                 GOOGLE_TIMEOUT_CNT += 1
-                print(Fore.YELLOW, f'【谷歌】超时 {GOOGLE_TIMEOUT_CNT} 次', Style.RESET_ALL, flush=True)
+                print(Fore.YELLOW, f'【谷歌】超时 {GOOGLE_TIMEOUT_CNT} 次（节点：{SSR.get_current_server()[-1]}）', Style.RESET_ALL, flush=True)
                 toast('Route', f'!!! 【谷歌】超时{GOOGLE_TIMEOUT_CNT}次', duration=5)
                 sleep_sec = 5
                 if GOOGLE_TIMEOUT_CNT >= 8:
@@ -248,8 +248,13 @@ def start():
                       print(Fore.RED, f'【百度】超时 {BAIDU_TIMEOUT_CNT} 次', Style.RESET_ALL, flush=True)
                       toast('Route', f'!!! 【百度】超时{BAIDU_TIMEOUT_CNT}次', duration=5)
                       if BAIDU_TIMEOUT_CNT >= 8:
-                        print(f'【百度】超时已达{BAIDU_TIMEOUT_CNT}次，开始重启【openwrt】......')
+                        print(f'【百度】超时已达{BAIDU_TIMEOUT_CNT}次......')
                         #start_router(True)
+                        curl_ss_gw_time = _request_page('https://pve.thy.pub:66')
+                        if curl_ss_gw_time is None:
+                            print(f'【网关】PVE公网连接超时，请检测网络......')
+                        else:
+                            print(Fore.RED, f'【网关】PVE连接，延迟{curl_ss_gw_time}', Style.RESET_ALL, flush=True)
                         BAIDU_TIMEOUT_CNT = 0
                   else:
                       print(Fore.RED, f'【百度】可连接，延迟{curl_baidu_time}', Style.RESET_ALL, flush=True)

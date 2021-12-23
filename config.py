@@ -33,7 +33,12 @@ CONFIG = {
     },
     'website': 'https://www.google.com/',
     'curl_count': 10,
-    'gateway': '10.8.6.1',
+    'gateways': {
+        'guest': '10.8.6.1',
+        'admin': '10.8.9.1',
+        'device': '10.8.7.1',
+        'mobile': '10.8.8.1'
+    },
     'scp_data_dir': 'henry@10.8.9.88:/www/proxy-mon/data/',
     'top_n': 4,
     'history_path': './data/history.csv',

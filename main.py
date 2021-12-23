@@ -4,7 +4,7 @@ from pybeans import utils as pu
 from openwrt import ShadowSocksR
 from rank import df_from_json, history, report, rank, history
 
-ssr = ShadowSocksR(ut['gateway'])
+ssr = ShadowSocksR(ut['gateways.guest'])
     
 def curl():
     result = []
