@@ -13,10 +13,12 @@ for gw in gateways:
     ip = gateways[gw]
     console.print(f'Finding servers in gateway: {gw}', end=',\t ')
     ssr = ShadowSocksR(ip)
-    if gw == ADMIN: SSR = ssr
+    if gw == ADMIN: 
+        SSR = ssr
+    if not GW_USING:
+        ssr.get_servers()
+        GW_USING = {alias:[] for _,alias in ssr.servers}
     svr_id, svr_alias = ssr.get_current_server()
-    if svr_alias not in GW_USING:
-        GW_USING[svr_alias] = []
     GW_USING[svr_alias].append(gw)
     console.print(f'Found server: {svr_alias}')    
 

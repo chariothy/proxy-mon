@@ -237,29 +237,30 @@ def start():
             curl_google_time = _request_page('https://www.google.com')
             if curl_google_time is None:
                 GOOGLE_TIMEOUT_CNT += 1
-                print(Fore.YELLOW, f'【谷歌】超时 {GOOGLE_TIMEOUT_CNT} 次（节点：{SSR.get_current_server()[-1]}）', Style.RESET_ALL, flush=True)
+                print(Fore.RED, f'【谷歌】超时 {GOOGLE_TIMEOUT_CNT} 次',Fore.YELLOW,f'（节点：{SSR.get_current_server()[-1]}）', Style.RESET_ALL, flush=True, end=' ')
                 toast('Route', f'!!! 【谷歌】超时{GOOGLE_TIMEOUT_CNT}次', duration=5)
                 sleep_sec = 5
                 if GOOGLE_TIMEOUT_CNT >= 8:
-                  print(f'【谷歌】超时已达{GOOGLE_TIMEOUT_CNT}次，开始测试【百度】......')                  
                   curl_baidu_time = _request_page('http://www.baidu.com')
                   if curl_baidu_time is None:
                       BAIDU_TIMEOUT_CNT += 1
                       print(Fore.RED, f'【百度】超时 {BAIDU_TIMEOUT_CNT} 次', Style.RESET_ALL, flush=True)
                       toast('Route', f'!!! 【百度】超时{BAIDU_TIMEOUT_CNT}次', duration=5)
                       if BAIDU_TIMEOUT_CNT >= 8:
-                        print(f'【百度】超时已达{BAIDU_TIMEOUT_CNT}次......')
                         #start_router(True)
                         curl_ss_gw_time = _request_page('https://pve.thy.pub:66')
                         if curl_ss_gw_time is None:
                             print(f'【网关】PVE公网连接超时，请检测网络......')
                         else:
-                            print(Fore.RED, f'【网关】PVE连接，延迟{curl_ss_gw_time}', Style.RESET_ALL, flush=True)
+                            times = '-' * round(curl_ss_gw_time/10) + str(curl_ss_gw_time)
+                            print(Fore.WHITE, f'【网关】PVE可连接 {times}', Style.RESET_ALL, flush=True)
                         BAIDU_TIMEOUT_CNT = 0
                   else:
-                      print(Fore.RED, f'【百度】可连接，延迟{curl_baidu_time}', Style.RESET_ALL, flush=True)
+                      times = '-' * round(curl_baidu_time/10) + str(curl_baidu_time)
+                      print(Fore.WHITE, f'【百度】可连接 {times}', Style.RESET_ALL, flush=True)
                       BAIDU_TIMEOUT_CNT = 0
-                console.print(f'当前节点：[blink bright_yellow]{SSR.get_current_server()[-1]}[/blink bright_yellow]')
+                else:
+                    print()
             else:
                 GOOGLE_TIMEOUT_CNT = 0
                 BAIDU_TIMEOUT_CNT = 0
