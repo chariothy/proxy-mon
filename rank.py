@@ -173,7 +173,7 @@ def history(df_agg):
         # 去除更新订阅后消失的节点，！记得换机场时要备份history，否则会被全部自动删除
         dfh = dfh[dfh.alias.isin(df_agg.alias)]
         if dfh.pos.count() == 0:
-            raise RuntimeError('History中不存在任何新节点')
+            raise RuntimeError('History中不存在任何新节点，请先备份history.csv')
         # 只保留最近一个月的记录
         dfh = dfh[dfh.date>arrow.now().shift(months=-1).format('YYYY-MM-DD')]
         today_cnt = dfh[dfh.date==today_int].pos.count()

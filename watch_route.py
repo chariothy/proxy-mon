@@ -13,7 +13,7 @@ console = Console()
 from utils import ut
 from openwrt import ShadowSocksR
 
-TITLE = 'CHANGE ROUTE'
+TITLE = 'WATCH ROUTE'
 os.system(f'title {TITLE}')
 init()
 
@@ -56,7 +56,6 @@ ROUTER_VM_NAME = 'router'
 SS_GATEWAY = ut['gateways.admin']
 
 SSR = ShadowSocksR(SS_GATEWAY)
-SSR.get_servers()
 
 def run(cmd, echo_cmd=False):
     try:
@@ -205,7 +204,6 @@ def start():
     real_gw_pos = ipconfig.find(REAL_GW)
 
     sleep_sec = 5
-    console.print(f'当前节点：[blink bright_yellow]{SSR.get_current_server()[-1]}[/blink bright_yellow]')
     while real_ip_pos >= 0 and real_gw_pos >= 0:
         route_table = run('route print')
         if_map = get_if_map(route_table)
@@ -234,6 +232,7 @@ def start():
             change_route()
             toast('Route', msg, duration=5)
         else:
+            SSR.get_servers()
             curl_google_time = _request_page('https://www.google.com')
             if curl_google_time is None:
                 GOOGLE_TIMEOUT_CNT += 1
