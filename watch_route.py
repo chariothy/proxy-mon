@@ -199,19 +199,22 @@ def start():
       #start_router()
     else:
       print('VM router is running')
-    ipconfig = run('ipconfig')
-    real_ip_pos = ipconfig.find(REAL_IP)
-    real_gw_pos = ipconfig.find(REAL_GW)
-
+      
     sleep_sec = 5
-    while real_ip_pos >= 0 and real_gw_pos >= 0:
+    while True:
         route_table = run('route print')
         if_map = get_if_map(route_table)
-        REAL_IF_NUM = if_map[REAL_IF]
-        PROXY_IF_NUM = if_map[PROXY_IF]
         
-        metric_snf = get_metrics(route_table, REAL_GW, REAL_IP)
-        metric_pxy = get_metrics(route_table, PROXY_GW, PROXY_IP)
+        if REAL_IF in if_map and PROXY_IF in if_map:
+            REAL_IF_NUM = if_map[REAL_IF]
+            PROXY_IF_NUM = if_map[PROXY_IF]
+            
+            metric_snf = get_metrics(route_table, REAL_GW, REAL_IP)
+            metric_pxy = get_metrics(route_table, PROXY_GW, PROXY_IP)
+        else:
+            # 有一块网卡被禁用了，此时不修改路由，只测试连通性
+            metric_pxy = 0
+            metric_snf = 1
             
         if metric_pxy < 0:
             metric_pxy = get_metrics(route_table, PROXY_GW, r'169\.254\.\d{2,3}\.\d{2,3}')
