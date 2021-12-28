@@ -194,11 +194,6 @@ def toast(title, msg, duration):
 
 def start():
     global BAIDU_TIMEOUT_CNT, GOOGLE_TIMEOUT_CNT, REAL_IF_NUM, PROXY_IF_NUM, MAX_CURL_TIME, MIN_CURL_TIME
-    if not is_router_running():
-      print('VM router is not running')
-      #start_router()
-    else:
-      print('VM router is running')
       
     sleep_sec = 5
     while True:
