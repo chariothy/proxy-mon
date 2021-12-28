@@ -278,7 +278,6 @@ def start():
     
 
 if __name__ == '__main__':
-    #start_router()
     try:
       start()
     except Exception as ex:
