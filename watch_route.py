@@ -107,8 +107,11 @@ def change_route():
     del_proxy_route_cmd = f'route delete 0.0.0.0 IF {PROXY_IF_NUM}'
     dc1_route_cmd = f'route add 10.0.0.0 MASK 255.255.0.0 {REAL_GW} METRIC 1 IF {REAL_IF_NUM}'  # 服务器
     dc2_route_cmd = f'route add 10.21.0.0 MASK 255.255.0.0 {REAL_GW} METRIC 1 IF {REAL_IF_NUM}' # 如东
-    real_route_cmd = f'route add 0.0.0.0 MASK 0.0.0.0 {REAL_GW} METRIC 9999 IF {REAL_IF_NUM}'
-    proxy_route_cmd = f'route add 0.0.0.0 MASK 0.0.0.0 {PROXY_GW} METRIC 1000 IF {PROXY_IF_NUM}'
+    #real_route_cmd = f'route add 0.0.0.0 MASK 0.0.0.0 {REAL_GW} METRIC 9999 IF {REAL_IF_NUM}' # 关闭从SNF的路由
+    # 2021-12-28发现如果打开SNF的路由会导致无法代理，即使是在路由器上设置Forward DNS to upstream
+    # 因此对SNF网卡，只设置其IP和MASK 255.255.0.0，不设置网关和DNS
+    real_route_cmd = ''
+    proxy_route_cmd = f'route add 0.0.0.0 MASK 0.0.0.0 {PROXY_GW} METRIC 1 IF {PROXY_IF_NUM}'
     print(Fore.GREEN, '=================网口信息===================', Style.RESET_ALL)
     print(f'物理网口序号：{REAL_IF_NUM}，IP：{REAL_IP:14}，网关：{REAL_GW:14}，名称：{REAL_IF}')
     print(f'代理网口序号：{PROXY_IF_NUM}，IP：{PROXY_IP:14}，网关：{PROXY_GW:14}，名称：{PROXY_IF}')
@@ -221,13 +224,13 @@ def start():
             else:
                 msg = f'[{PROXY_IF_ALIAS}] 已下线！'
                 print(Fore.RED, f'\n>>> {msg} <<<', Style.RESET_ALL, flush=True)
-                change_route()
+                #change_route()     # 目前只从Proxy走，不需要change_route
                 toast('Route', msg, duration=15)
         elif metric_snf > 0 and metric_pxy >= metric_snf:
             print(f'\n>>> [{PROXY_IF_ALIAS}] metric={metric_pxy}，[{REAL_IF_ALIAS}] metric={metric_snf}', flush=True)
             msg = f'[{PROXY_IF_ALIAS}] 的优先级低于 [{REAL_IF_ALIAS}]，需要调整'
             print(Fore.YELLOW, f'\n>>> {msg}', Style.RESET_ALL, flush=True)
-            change_route()
+            #change_route()     # 目前只从Proxy走，不需要change_route
             toast('Route', msg, duration=5)
         else:
             SSR.get_servers()
