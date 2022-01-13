@@ -24,17 +24,17 @@ REAL_IF = 'Realtek USB GbE Family Controller #3'
 REAL_IF_NUM = 0
 REAL_IF_ALIAS = '物理网关'
 
-#PROXY_IP = '192.168.33.18'
-#PROXY_GW = '192.168.33.254'
-#PROXY_IF = 'VirtualBox Host-Only Ethernet Adapter #8'
-#PROXY_IF_NUM = 0
-#PROXY_IF_ALIAS = '代理网关'
-
-PROXY_IP = '192.168.10.18'
-PROXY_GW = '192.168.10.1'
-PROXY_IF = 'ASIX AX88179 USB 3.0 to Gigabit Ethernet Adapter'
+PROXY_IP = '192.168.33.18'
+PROXY_GW = '192.168.33.254'
+PROXY_IF = 'VirtualBox Host-Only Ethernet Adapter #8'
 PROXY_IF_NUM = 0
-PROXY_IF_ALIAS = '代理网关'
+PROXY_IF_ALIAS = 'VirtualBox网关'
+
+# PROXY_IP = '192.168.10.18'
+# PROXY_GW = '192.168.10.1'
+# PROXY_IF = 'ASIX AX88179 USB 3.0 to Gigabit Ethernet Adapter'
+# PROXY_IF_NUM = 0
+# PROXY_IF_ALIAS = 'USB网关'
 
 REG_IF = re.compile(r'\s*(\d+)\.+(?:\w\w\s){6}\.+(.+)')
 REG_SNF = re.compile(rf'0.0.0.0\s+0.0.0.0\s+{REAL_GW}\s+{REAL_IP}\s+(\d+)')
@@ -138,45 +138,49 @@ def change_route():
     
 
 def is_router_running():
-    runningVMs = run([VBOX_PATH, 'list', 'runningvms'])
-    print(runningVMs)
-    if f'"{ROUTER_VM_NAME}"' in runningVMs:
-        return True
+    if PROXY_IF.startswith('VirtualBox'):
+        runningVMs = run([VBOX_PATH, 'list', 'runningvms'])
+        print(runningVMs)
+        if f'"{ROUTER_VM_NAME}"' in runningVMs:
+            return True
     return False
 
 
 def wait_for_router_down():
-    running = is_router_running()
-    while running:
-        print(f'"{ROUTER_VM_NAME}" is running, sleep 3 seconds ...')
-        time.sleep(3)
+    if PROXY_IF.startswith('VirtualBox'):
         running = is_router_running()
+        while running:
+            print(f'"{ROUTER_VM_NAME}" is running, sleep 3 seconds ...')
+            time.sleep(3)
+            running = is_router_running()
         
         
 def wait_for_router_up():
-    running = is_router_running()
-    while not running:
-        print(f'"{ROUTER_VM_NAME}" is down, sleep 3 seconds ...')
-        time.sleep(3)
+    if PROXY_IF.startswith('VirtualBox'):
         running = is_router_running()
+        while not running:
+            print(f'"{ROUTER_VM_NAME}" is down, sleep 3 seconds ...')
+            time.sleep(3)
+            running = is_router_running()
     
 
 def start_router(close_router_first:bool=False):
-    if close_router_first:
-      print(f'ACPI power off "{ROUTER_VM_NAME}" ...')
-      run([VBOX_PATH, 'controlvm', ROUTER_VM_NAME, 'acpipowerbutton'])
-    wait_for_router_down()
-    seconds = 15
-    print(f'Power on "{ROUTER_VM_NAME}", please wait for {seconds} seconds ...')
-    run([VBOX_PATH, 'startvm', ROUTER_VM_NAME])
-    wait_for_router_up()
-    time.sleep(seconds)
-    
-    curl_gw_time = _request_page(f'http://{PROXY_GW}')
-    while curl_gw_time is None:
-        print('No responding from router webpage.')
-        time.sleep(3)
+    if PROXY_IF.startswith('VirtualBox'):
+        if close_router_first:
+            print(f'ACPI power off "{ROUTER_VM_NAME}" ...')
+            run([VBOX_PATH, 'controlvm', ROUTER_VM_NAME, 'acpipowerbutton'])
+            wait_for_router_down()
+        seconds = 15
+        print(f'Power on "{ROUTER_VM_NAME}", please wait for {seconds} seconds ...')
+        run([VBOX_PATH, 'startvm', ROUTER_VM_NAME])
+        wait_for_router_up()
+        time.sleep(seconds)
+        
         curl_gw_time = _request_page(f'http://{PROXY_GW}')
+        while curl_gw_time is None:
+            print('No responding from router webpage.')
+            time.sleep(3)
+            curl_gw_time = _request_page(f'http://{PROXY_GW}')
     
 
 def toast(title, msg, duration):
@@ -197,7 +201,12 @@ def toast(title, msg, duration):
 
 def start():
     global BAIDU_TIMEOUT_CNT, GOOGLE_TIMEOUT_CNT, REAL_IF_NUM, PROXY_IF_NUM, MAX_CURL_TIME, MIN_CURL_TIME
-      
+    if not is_router_running():
+        print('VM router is not running')
+        start_router()
+    else:
+        print('VM router is running')
+
     sleep_sec = 5
     while True:
         route_table = run('route print')
@@ -230,7 +239,7 @@ def start():
             print(f'\n>>> [{PROXY_IF_ALIAS}] metric={metric_pxy}，[{REAL_IF_ALIAS}] metric={metric_snf}', flush=True)
             msg = f'[{PROXY_IF_ALIAS}] 的优先级低于 [{REAL_IF_ALIAS}]，需要调整'
             print(Fore.YELLOW, f'\n>>> {msg}', Style.RESET_ALL, flush=True)
-            #change_route()     # 目前只从Proxy走，不需要change_route
+            #change_route()     # 目前0.0.0.0只从Proxy走，不需要change_route
             toast('Route', msg, duration=5)
         else:
             SSR.get_servers()
