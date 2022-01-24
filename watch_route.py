@@ -233,13 +233,13 @@ def start():
             else:
                 msg = f'[{PROXY_IF_ALIAS}] 已下线！'
                 print(Fore.RED, f'\n>>> {msg} <<<', Style.RESET_ALL, flush=True)
-                #change_route()     # 目前只从Proxy走，不需要change_route
+                change_route()     # 目前只从Proxy走，不需要change_route
                 toast('Route', msg, duration=15)
         elif metric_snf > 0 and metric_pxy >= metric_snf:
             print(f'\n>>> [{PROXY_IF_ALIAS}] metric={metric_pxy}，[{REAL_IF_ALIAS}] metric={metric_snf}', flush=True)
             msg = f'[{PROXY_IF_ALIAS}] 的优先级低于 [{REAL_IF_ALIAS}]，需要调整'
             print(Fore.YELLOW, f'\n>>> {msg}', Style.RESET_ALL, flush=True)
-            #change_route()     # 目前0.0.0.0只从Proxy走，不需要change_route
+            change_route()     # 目前0.0.0.0只从Proxy走，不需要change_route
             toast('Route', msg, duration=5)
         else:
             SSR.get_servers()
