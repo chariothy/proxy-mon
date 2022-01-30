@@ -24,17 +24,17 @@ REAL_IF = 'Realtek USB GbE Family Controller #3'
 REAL_IF_NUM = 0
 REAL_IF_ALIAS = '物理网关'
 
-PROXY_IP = '192.168.33.18'
-PROXY_GW = '192.168.33.254'
-PROXY_IF = 'VirtualBox Host-Only Ethernet Adapter #8'
-PROXY_IF_NUM = 0
-PROXY_IF_ALIAS = 'VirtualBox网关'
-
-# PROXY_IP = '192.168.10.18'
-# PROXY_GW = '192.168.10.1'
-# PROXY_IF = 'ASIX AX88179 USB 3.0 to Gigabit Ethernet Adapter'
+# PROXY_IP = '192.168.33.18'
+# PROXY_GW = '192.168.33.254'
+# PROXY_IF = 'VirtualBox Host-Only Ethernet Adapter #8'
 # PROXY_IF_NUM = 0
-# PROXY_IF_ALIAS = 'USB网关'
+# PROXY_IF_ALIAS = 'VirtualBox网关'
+
+PROXY_IP = '192.168.10.18'
+PROXY_GW = '192.168.10.1'
+PROXY_IF = 'ASIX AX88179 USB 3.0 to Gigabit Ethernet Adapter'
+PROXY_IF_NUM = 0
+PROXY_IF_ALIAS = 'USB网关'
 
 REG_IF = re.compile(r'\s*(\d+)\.+(?:\w\w\s){6}\.+(.+)')
 REG_SNF = re.compile(rf'0.0.0.0\s+0.0.0.0\s+{REAL_GW}\s+{REAL_IP}\s+(\d+)')
@@ -201,11 +201,12 @@ def toast(title, msg, duration):
 
 def start():
     global BAIDU_TIMEOUT_CNT, GOOGLE_TIMEOUT_CNT, REAL_IF_NUM, PROXY_IF_NUM, MAX_CURL_TIME, MIN_CURL_TIME
-    if not is_router_running():
-        print('VM router is not running')
-        start_router()
-    else:
-        print('VM router is running')
+    if PROXY_IF.startswith('VirtualBox'):
+        if not is_router_running():
+            print('VM router is not running')
+            start_router()
+        else:
+            print('VM router is running')
 
     sleep_sec = 5
     while True:
@@ -233,20 +234,20 @@ def start():
             else:
                 msg = f'[{PROXY_IF_ALIAS}] 已下线！'
                 print(Fore.RED, f'\n>>> {msg} <<<', Style.RESET_ALL, flush=True)
-                change_route()     # 目前只从Proxy走，不需要change_route
+                #change_route()     # 目前只从Proxy走，不需要change_route
                 toast('Route', msg, duration=15)
         elif metric_snf > 0 and metric_pxy >= metric_snf:
             print(f'\n>>> [{PROXY_IF_ALIAS}] metric={metric_pxy}，[{REAL_IF_ALIAS}] metric={metric_snf}', flush=True)
             msg = f'[{PROXY_IF_ALIAS}] 的优先级低于 [{REAL_IF_ALIAS}]，需要调整'
             print(Fore.YELLOW, f'\n>>> {msg}', Style.RESET_ALL, flush=True)
-            change_route()     # 目前0.0.0.0只从Proxy走，不需要change_route
+            #change_route()     # 目前0.0.0.0只从Proxy走，不需要change_route
             toast('Route', msg, duration=5)
         else:
             SSR.get_servers()
             curl_google_time = _request_page('https://www.google.com')
             if curl_google_time is None:
                 GOOGLE_TIMEOUT_CNT += 1
-                print(Fore.RED, f'【谷歌】超时 {GOOGLE_TIMEOUT_CNT} 次',Fore.YELLOW,f'（节点：{SSR.get_current_server()[-1]}）', Style.RESET_ALL, flush=True, end=' ')
+                print(Fore.RED, f'【谷歌】超时 {GOOGLE_TIMEOUT_CNT} 次',Fore.YELLOW,f'（节点：{SSR.get_current_server()}）', Style.RESET_ALL, flush=True, end=' ')
                 toast('Route', f'!!! 【谷歌】超时{GOOGLE_TIMEOUT_CNT}次', duration=5)
                 sleep_sec = 5
                 if GOOGLE_TIMEOUT_CNT >= 8:

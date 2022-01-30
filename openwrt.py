@@ -17,10 +17,12 @@ class ShadowSocksR(object):
         if not self.servers:
             result = ut.run(f'scp ./bin/shadowsocksr.sh root@{self.gateway}:/tmp/shadowsocksr.sh')
             if 'Connection timed out' in result:
-                raise RuntimeError(f'Failed to copy shadowsocksr.sh. Message: {result}')
+                #raise RuntimeError(f'Failed to copy shadowsocksr.sh. Message: {result}')
+                return []
             result = ut.run(f'ssh root@{self.gateway} "chmod +x /tmp/shadowsocksr.sh && /tmp/shadowsocksr.sh"')
             if 'Connection timed out' in result:
-                raise RuntimeError(f'Failed to run shadowsocksr.sh. Message: {result}')
+                #raise RuntimeError(f'Failed to run shadowsocksr.sh. Message: {result}')
+                return []
             self.servers = REG_SSR_SERVER.findall(result)
             
     
@@ -28,7 +30,8 @@ class ShadowSocksR(object):
         self.get_servers()
         result = ut.run(f'ssh root@{self.gateway} "uci show shadowsocksr.@global[0].global_server"')
         if 'Connection timed out' in result:
-            raise RuntimeError(f'Failed to get current server. Message: {result}')
+            #raise RuntimeError(f'Failed to get current server. Message: {result}')
+            return None
 
         ss_current = REG_SSR_CURRENT.findall(result)[0]
         for server in self.servers:
@@ -37,6 +40,7 @@ class ShadowSocksR(object):
                 self.id = id
                 self.alias = alias
                 return server
+    
     
     def run(self):
         self.get_servers()
@@ -55,7 +59,6 @@ class ShadowSocksR(object):
         if 'Connection timed out' in result:
             raise RuntimeError(f'Failed to set current server. Message: {result}')
         return result
-            
 
 
 if __name__ == '__main__':
