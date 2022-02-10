@@ -237,8 +237,8 @@ def start():
                 #change_route()     # 目前只从Proxy走，不需要change_route
                 toast('Route', msg, duration=15)
         elif metric_snf > 0 and metric_pxy >= metric_snf:
-            print(f'\n>>> [{PROXY_IF_ALIAS}] metric={metric_pxy}，[{REAL_IF_ALIAS}] metric={metric_snf}', flush=True)
-            msg = f'[{PROXY_IF_ALIAS}] 的优先级低于 [{REAL_IF_ALIAS}]，需要调整'
+            print(f'\n>>> [{PROXY_IF_ALIAS}(IF={PROXY_IF_NUM})] metric={metric_pxy}，[{REAL_IF_ALIAS}(IF={REAL_IF_NUM})] metric={metric_snf}', flush=True)
+            msg = f'[{PROXY_IF_ALIAS}(IF={PROXY_IF_NUM})] 的优先级低于 [{REAL_IF_ALIAS}(IF={REAL_IF_NUM})]，需要调整'
             print(Fore.YELLOW, f'\n>>> {msg}', Style.RESET_ALL, flush=True)
             #change_route()     # 目前0.0.0.0只从Proxy走，不需要change_route
             toast('Route', msg, duration=5)
