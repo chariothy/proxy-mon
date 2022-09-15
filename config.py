@@ -42,5 +42,28 @@ CONFIG = {
     'scp_data_dir': 'henry@10.8.9.88:/www/proxy-mon/data/',
     'top_n': 4,
     'history_path': './data/history.csv',
-    'after_scp_data': 'ssh henry@10.8.9.88 docker restart proxy-dash'
+    'after_scp_data': 'ssh henry@10.8.9.88 docker restart proxy-dash',
+    'watch_route': {
+        'real': {
+            'ip': '10.20.193.67',
+            'gw': '10.20.0.254',
+            'if': 'Realtek USB GbE Family Controller #4',
+            'if_num': 0,
+            'if_alias': 'Realtek网关'
+        },
+        'proxy': {
+            'ip': '192.168.33.18',
+            'gw': '192.168.33.254',
+            'if': 'VirtualBox Host-Only Ethernet Adapter #8',
+            'if_num': 0,
+            'if_alias': 'VirtualBox网关'
+        },
+        'proxy2': {
+            'ip': '192.168.10.18',
+            'gw': '192.168.10.1',
+            'if': 'ASIX AX88179 USB 3.0 to Gigabit Ethernet Adapter',
+            'if_num': 0,
+            'if_alias': 'USB网关'
+        }
+    }
 }

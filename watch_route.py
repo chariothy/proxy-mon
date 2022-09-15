@@ -18,23 +18,17 @@ os.system(f'title {TITLE}')
 init()
 
 ###################################### Interface Definition ######################################
-REAL_IP = '10.20.193.67'
-REAL_GW = '10.20.0.254'
-REAL_IF = 'Realtek USB GbE Family Controller #3'
-REAL_IF_NUM = 0
-REAL_IF_ALIAS = '物理网关'
+REAL_IP = ut['watch_route.real.ip']
+REAL_GW = ut['watch_route.real.gw']
+REAL_IF = ut['watch_route.real.if']
+REAL_IF_NUM = ut['watch_route.real.if_num']
+REAL_IF_ALIAS = ut['watch_route.real.if_alias']
 
-# PROXY_IP = '192.168.33.18'
-# PROXY_GW = '192.168.33.254'
-# PROXY_IF = 'VirtualBox Host-Only Ethernet Adapter #8'
-# PROXY_IF_NUM = 0
-# PROXY_IF_ALIAS = 'VirtualBox网关'
-
-PROXY_IP = '192.168.10.18'
-PROXY_GW = '192.168.10.1'
-PROXY_IF = 'ASIX AX88179 USB 3.0 to Gigabit Ethernet Adapter'
-PROXY_IF_NUM = 0
-PROXY_IF_ALIAS = 'USB网关'
+PROXY_IP = ut['watch_route.proxy.ip']
+PROXY_GW = ut['watch_route.proxy.gw']
+PROXY_IF = ut['watch_route.proxy.if']
+PROXY_IF_NUM = ut['watch_route.proxy.if_num']
+PROXY_IF_ALIAS = ut['watch_route.proxy.if_alias']
 
 REG_IF = re.compile(r'\s*(\d+)\.+(?:\w\w\s){6}\.+(.+)')
 REG_SNF = re.compile(rf'0.0.0.0\s+0.0.0.0\s+{REAL_GW}\s+{REAL_IP}\s+(\d+)')
@@ -234,13 +228,13 @@ def start():
             else:
                 msg = f'[{PROXY_IF_ALIAS}] 已下线！'
                 print(Fore.RED, f'\n>>> {msg} <<<', Style.RESET_ALL, flush=True)
-                #change_route()     # 目前只从Proxy走，不需要change_route
+                change_route()     # 目前只从Proxy走，不需要change_route
                 toast('Route', msg, duration=15)
         elif metric_snf > 0 and metric_pxy >= metric_snf:
             print(f'\n>>> [{PROXY_IF_ALIAS}(IF={PROXY_IF_NUM})] metric={metric_pxy}，[{REAL_IF_ALIAS}(IF={REAL_IF_NUM})] metric={metric_snf}', flush=True)
             msg = f'[{PROXY_IF_ALIAS}(IF={PROXY_IF_NUM})] 的优先级低于 [{REAL_IF_ALIAS}(IF={REAL_IF_NUM})]，需要调整'
             print(Fore.YELLOW, f'\n>>> {msg}', Style.RESET_ALL, flush=True)
-            #change_route()     # 目前0.0.0.0只从Proxy走，不需要change_route
+            change_route()     # 目前0.0.0.0只从Proxy走，不需要change_route
             toast('Route', msg, duration=5)
         else:
             SSR.get_servers()
