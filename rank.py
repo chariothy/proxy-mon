@@ -184,8 +184,8 @@ def history(df_agg):
             all_frame.to_csv(history_path)
     else:
         df_agg.to_csv(history_path)
-    ut.run(f'scp {history_path} {ut["scp_data_dir"]}')  # 复制到网站服务器
-    ut.run(ut['after_scp_data'])
+    ut.run(f'scp {history_path} {ut["proxy_service_ssh"]}:/www/proxy-mon/data/')
+    ut.run(f'ssh {ut["proxy_service_ssh"]} docker restart proxy-dash')
 
 
 def rank(df:DataFrame):

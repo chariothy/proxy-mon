@@ -39,10 +39,9 @@ CONFIG = {
         'device': '10.8.7.1',
         'mobile': '10.8.8.1'
     },
-    'scp_data_dir': 'henry@10.8.9.88:/www/proxy-mon/data/',
+    'proxy_service_ssh': 'henry@10.8.9.88',
     'top_n': 4,
     'history_path': './data/history.csv',
-    'after_scp_data': 'ssh henry@10.8.9.88 docker restart proxy-dash',
     'watch_route': {
         'real': {
             'ip': '10.20.193.67',
