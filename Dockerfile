@@ -1,7 +1,7 @@
 # For githook project
 # @version 1.0
 
-FROM chariothy/pydata:3.9
+FROM chariothy/pydata:3.10
 LABEL maintainer="chariothy@gmail.com"
 
 ENV PROXY_MON_MAIL_FROM="Henry TIAN <chariothy@gmail.com>"
