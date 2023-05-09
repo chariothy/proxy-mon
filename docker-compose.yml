@@ -29,7 +29,7 @@ services:
   proxy-rank:
     build: .
     image: proxy-mon
-    container_name: proxy-dash
+    container_name: proxy-rank
     volumes: 
       - /www/proxy-mon:/app
     working_dir: /app
