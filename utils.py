@@ -103,7 +103,7 @@ class Util(AppTool):
         time.sleep(sleep)
         return ping
 
-ut = Util('proxy-mon')
+ut = Util('proxy-rank')
 
 
 if __name__ == '__main__':

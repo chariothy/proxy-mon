@@ -7,7 +7,7 @@ from plotly.subplots import make_subplots
 from dash.dependencies import Input, Output
 import pandas as pd
 from os import name, path
-from utils import ut
+from utils import Util
 from pybeans import utils as pu
 from rank import rank, df_from_json
 
@@ -19,7 +19,7 @@ df = None
 app = dash.Dash(__name__)
 app.title = 'Proxy benchmark'
 
-
+ut = Util('proxy-ui')
 history_df = pd.read_csv(ut['history_path'], parse_dates=['date'])
 history_df.pos += 1
 history_fig = px.line(history_df, x='date', y='pos', color='alias', markers=True)
