@@ -1,7 +1,7 @@
 rich
 requests
 requests[socks]
-pybeans>=1.7.5
+pybeans>=1.7.6
 plotly
 premailer
 pandas
