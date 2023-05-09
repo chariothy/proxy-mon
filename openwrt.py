@@ -15,15 +15,18 @@ class ShadowSocksR(object):
     
     def get_servers(self):
         if not self.servers:
+            ut.I('Copying shadowsocksr.sh to openwrt ...')
             result = ut.run(f'scp ./bin/shadowsocksr.sh root@{self.gateway}:/tmp/shadowsocksr.sh')
             if 'Connection timed out' in result:
                 #raise RuntimeError(f'Failed to copy shadowsocksr.sh. Message: {result}')
                 return []
+            ut.I('Running shadowsocksr.sh ...')
             result = ut.run(f'ssh root@{self.gateway} "chmod +x /tmp/shadowsocksr.sh && /tmp/shadowsocksr.sh"')
             if 'Connection timed out' in result:
                 #raise RuntimeError(f'Failed to run shadowsocksr.sh. Message: {result}')
                 return []
             self.servers = REG_SSR_SERVER.findall(result)
+            ut.I('Got servers', self.servers)
             
     
     def get_current_server(self):
