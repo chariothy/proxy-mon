@@ -33,11 +33,12 @@ services:
     volumes: 
       - /usr/bin/scp:/usr/bin/scp
       - /usr/bin/ssh:/usr/bin/ssh
-      - ~/.ssh:/root/.ssh
+      - ~/.ssh:/home/${UNAME}/.ssh
       - /www/proxy-mon:/app
     working_dir: /app
     networks: 
       - default
+    userns_mode: "host"
     restart: "no"
     logging:
       options:

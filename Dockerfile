@@ -27,5 +27,14 @@ RUN ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime \
   && pip install --no-cache-dir -r ./requirements.txt
   #&& python /app/dl_v2ray.py
 
+ARG UNAME=henry
+ARG UID=1000
+ARG GID=1000
+
+RUN groupadd -g $GID -o $UNAME \
+  && useradd -m -u $UID -g $GID -o -s /bin/bash $UNAME \
+  && usermod -G root $UNAME
+  
+USER $UNAME
 
 CMD [ "python", "main.py" ]
