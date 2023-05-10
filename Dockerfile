@@ -16,17 +16,16 @@ ENV PROXY_MON_SMTP_PORT=25
 ENV PROXY_MON_SMTP_USER=chariothy@gmail.com
 ENV PROXY_MON_SMTP_PWD=password
 
-WORKDIR /app
 COPY ./requirements.txt .
 #COPY ./dl_v2ray.py .
 #COPY ./utils.py .
 
 RUN ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime \
   && echo 'Asia/Shanghai' > /etc/timezone \
-  && apt-get update \
+  #&& apt-get update \
 	#&& apt-get install -y --no-install-recommends shadowsocks-libev \
-  && apt-get autoclean \
-  && rm -rf /var/lib/apt/lists/* \
+  #&& apt-get autoclean \
+  #&& rm -rf /var/lib/apt/lists/* \
   && pip install -U pip \
   && pip install --no-cache-dir -r ./requirements.txt \
   #&& python /app/dl_v2ray.py
@@ -34,6 +33,8 @@ RUN ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime \
   && useradd -m -u $UID -g $GID -o -s /bin/bash $UNAME \
   && usermod -G root $UNAME
   
-#USER $UNAME
+USER $UNAME
+
+WORKDIR /app
 
 CMD [ "python", "main.py" ]

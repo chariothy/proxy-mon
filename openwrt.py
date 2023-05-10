@@ -20,17 +20,21 @@ class ShadowSocksR(object):
             if 'Connection timed out' in result:
                 #raise RuntimeError(f'Failed to copy shadowsocksr.sh. Message: {result}')
                 return []
+            ut.I('Output: ', result)
             ut.I('Running shadowsocksr.sh ...')
             result = ut.run(f'ssh root@{self.gateway} "chmod +x /tmp/shadowsocksr.sh && /tmp/shadowsocksr.sh"')
             if 'Connection timed out' in result:
                 #raise RuntimeError(f'Failed to run shadowsocksr.sh. Message: {result}')
                 return []
+            ut.I('Output: ', result)
             self.servers = REG_SSR_SERVER.findall(result)
             ut.I('Got servers', self.servers)
             
     
     def get_current_server(self):
         self.get_servers()
+        if len(self.servers) == 0:
+            ut.error('Cannot get servers from openwrt.')
         result = ut.run(f'ssh root@{self.gateway} "uci show shadowsocksr.@global[0].global_server"')
         if 'Connection timed out' in result:
             #raise RuntimeError(f'Failed to get current server. Message: {result}')
@@ -47,6 +51,8 @@ class ShadowSocksR(object):
     
     def run(self):
         self.get_servers()
+        if len(self.servers) == 0:
+            ut.error('Cannot get servers from openwrt.')
         for i, server in enumerate(self.servers):
             id, alias = server
             ut.I(f'Switching to [{i+1}] {alias} ...')
