@@ -4,6 +4,10 @@
 FROM chariothy/pydata:3.10
 LABEL maintainer="chariothy@gmail.com"
 
+ARG UNAME=henry
+ARG UID=1000
+ARG GID=1000
+
 ENV PROXY_MON_MAIL_FROM="Henry TIAN <chariothy@gmail.com>"
 ENV PROXY_MON_MAIL_TO="Henry TIAN <chariothy@gmail.com>"
 
@@ -24,14 +28,9 @@ RUN ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime \
   && apt-get autoclean \
   && rm -rf /var/lib/apt/lists/* \
   && pip install -U pip \
-  && pip install --no-cache-dir -r ./requirements.txt
+  && pip install --no-cache-dir -r ./requirements.txt \
   #&& python /app/dl_v2ray.py
-
-ARG UNAME=henry
-ARG UID=1000
-ARG GID=1000
-
-RUN groupadd -g $GID -o $UNAME \
+  && groupadd -g $GID -o $UNAME \
   && useradd -m -u $UID -g $GID -o -s /bin/bash $UNAME \
   && usermod -G root $UNAME
   
