@@ -21,19 +21,21 @@ COPY ./requirements.txt .
 #COPY ./utils.py .
 
 RUN ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime \
-  && echo 'Asia/Shanghai' > /etc/timezone \
+  && echo 'Asia/Shanghai' > /etc/timezone
   #&& apt-get update \
 	#&& apt-get install -y --no-install-recommends shadowsocks-libev \
   #&& apt-get autoclean \
   #&& rm -rf /var/lib/apt/lists/* \
-  && pip install -U pip \
-  && pip install --no-cache-dir -r ./requirements.txt \
   #&& python /app/dl_v2ray.py
-  && groupadd -g $GID -o $UNAME \
+
+RUN groupadd -g $GID -o $UNAME \
   && useradd -m -u $UID -g $GID -o -s /bin/bash $UNAME \
   && usermod -G root $UNAME
   
 USER $UNAME
+
+RUN pip install -U pip \
+  && pip install --no-cache-dir -r ./requirements.txt  
 
 WORKDIR /app
 

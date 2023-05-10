@@ -31,9 +31,9 @@ services:
     image: proxy-mon
     container_name: proxy-rank
     volumes: 
-      - /usr/bin/scp:/usr/bin/scp
-      - /usr/bin/ssh:/usr/bin/ssh
-      - ~/.ssh:/home/${UNAME}/.ssh
+      - /usr/bin/scp:/usr/bin/scp:ro
+      - /usr/bin/ssh:/usr/bin/ssh:ro
+      - ~/.ssh:/home/${UNAME}/.ssh:ro
       - /www/proxy-mon:/app
     working_dir: /app
     networks: 
