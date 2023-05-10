@@ -34,7 +34,8 @@ RUN groupadd -g $GID -o $UNAME \
   
 USER $UNAME
 
-RUN pip install -U pip \
+RUN export PATH="$PATH:/home/$UNAME/.local/bin" \
+  && pip install -U pip \
   && pip install --no-cache-dir -r ./requirements.txt  
 
 WORKDIR /app
