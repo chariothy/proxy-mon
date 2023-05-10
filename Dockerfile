@@ -34,6 +34,6 @@ RUN ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime \
   && useradd -m -u $UID -g $GID -o -s /bin/bash $UNAME \
   && usermod -G root $UNAME
   
-USER $UNAME
+#USER $UNAME
 
 CMD [ "python", "main.py" ]
