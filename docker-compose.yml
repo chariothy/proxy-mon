@@ -17,7 +17,7 @@ services:
         max-size: "10m"
     environment: 
       - ENV=${ENV}
-    command: /home/$UNAME/.local/bin/uvicorn server:app --host "0.0.0.0" --port 8050 --reload --reload-include "*.json"
+    command: python server.py
   proxy-rank:
     build: .
     image: proxy-mon

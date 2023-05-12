@@ -140,5 +140,7 @@ def update_history(hoverData, clickData):
 
 
 if __name__ == '__main__':
-    import uvicorn
-    uvicorn.run("server:app", host="0.0.0.0", reload=True)
+    app.run_server(
+        host='0.0.0.0', 
+        debug=False
+    )

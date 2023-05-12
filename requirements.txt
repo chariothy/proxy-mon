@@ -6,5 +6,4 @@ plotly
 premailer
 pandas
 dash
-uvicorn[standard]
 arrow
