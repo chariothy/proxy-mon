@@ -19,7 +19,7 @@ df = None
 app = dash.Dash(__name__)
 app.title = 'Proxy benchmark'
 
-ut = Util('proxy-ui')
+ut = Util('proxy-dash')
 history_df = pd.read_csv(ut['history_path'], parse_dates=['date'])
 history_df.pos += 1
 history_fig = px.line(history_df, x='date', y='pos', color='alias', markers=True)
@@ -140,8 +140,5 @@ def update_history(hoverData, clickData):
 
 
 if __name__ == '__main__':
-    is_prod = ut.env() == 'prod'
-    app.run_server(
-        host='0.0.0.0', 
-        debug=not is_prod
-    )
+    import uvicorn
+    uvicorn.run("server:app", host="0.0.0.0", reload=True)
