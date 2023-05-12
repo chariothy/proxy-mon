@@ -1,7 +1,7 @@
 # For githook project
 # @version 1.0
 
-FROM chariothy/pydata:3.10
+FROM chariothy/pydata:latest
 LABEL maintainer="chariothy@gmail.com"
 
 ARG UNAME=henry
@@ -32,8 +32,10 @@ RUN groupadd -g $GID -o $UNAME \
   && useradd -m -u $UID -g $GID -o -s /bin/bash $UNAME \
   && usermod -G root $UNAME
   
+# Should set user before pip install
+# Otherwise pip will install under /root/.local
+# Then pip list will be empty
 USER $UNAME
-
 RUN export PATH="$PATH:/home/$UNAME/.local/bin" \
   && pip install -U pip \
   && pip install --no-cache-dir -r ./requirements.txt  

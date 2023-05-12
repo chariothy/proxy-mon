@@ -1,9 +1,9 @@
 version: "3"
 services:
-  proxy-ui:
+  proxy-dash:
     build: .
     image: proxy-mon
-    container_name: proxy-ui
+    container_name: proxy-dash
     volumes: 
       - /www/proxy-mon:/app
     working_dir: /app
@@ -17,14 +17,6 @@ services:
         max-size: "10m"
     environment: 
       - ENV=${ENV}
-      - PROXY_UI_MAIL_FROM=${MAIL_FROM:-"Henry TIAN <chariothy@gmail.com>"}
-      - PROXY_UI_MAIL_TO=${MAIL_TO:-"Henry TIAN <chariothy@gmail.com>"}
-      - PROXY_UI_SMTP_HOST=${SMTP_HOST:-smtp.gmail.com}
-      - PROXY_UI_SMTP_PORT=${SMTP_PORT:-25}
-      - PROXY_UI_SMTP_USER=${SMTP_USER:-chariothy@gmail.com}
-      - PROXY_UI_SMTP_PWD=${SMTP_PWD}
-      - PROXY_UI_DINGTALK_TOKEN=${DINGTALK_TOKEN}
-      - PROXY_UI_DINGTALK_SECRET=${DINGTALK_SECRET}
     command: python server.py
   proxy-rank:
     build: .
