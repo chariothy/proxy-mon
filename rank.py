@@ -182,8 +182,10 @@ def history(df_agg):
         if today_cnt == 0:
             all_frame = pd.concat([df_agg, dfh])
             all_frame.to_csv(history_path)
+            return all_frame
     else:
         df_agg.to_csv(history_path)
+        return df_agg
     #ut.run(f'scp {history_path} {ut["proxy_service_ssh"]}:/www/proxy-mon/data/')
     #ut.run(f'ssh {ut["proxy_service_ssh"]} docker restart proxy-dash')
 
