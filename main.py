@@ -29,6 +29,9 @@ def curl():
 def mon():
     try:
         start = datetime.now()
+        id, alias = ssr.get_current_server()
+        ut.I('Got current server', (id, alias))
+        
         filename = curl()
         #filename='./data/20211015_133816.json'
         end = datetime.now()
@@ -38,6 +41,8 @@ def mon():
         df_agg = rank(df)
         ut.D(df_agg)
         history(df_agg)
+    
+        ssr.set_server(id, alias)
         
         top_n = ut['top_n']
         report(df_agg.head(top_n))

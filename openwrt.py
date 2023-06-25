@@ -50,8 +50,6 @@ class ShadowSocksR(object):
     
     
     def run(self):
-        id, alias = self.get_current_server()
-        ut.I('Got current server', (id, alias))
         self.get_servers()
         if len(self.servers) == 0:
             ut.error('Cannot get servers from openwrt.')
@@ -63,7 +61,6 @@ class ShadowSocksR(object):
             print(f'Sleeping 3 seconds ...')
             ut.sleep(3)
             yield (id, alias)
-        self.set_server(id, alias)
             
     
     def set_server(self, id:str, alias:str=None):
