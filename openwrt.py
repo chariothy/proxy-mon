@@ -51,6 +51,7 @@ class ShadowSocksR(object):
     
     def run(self):
         id, alias = self.get_current_server()
+        ut.I('Got current server', (id, alias))
         self.get_servers()
         if len(self.servers) == 0:
             ut.error('Cannot get servers from openwrt.')
@@ -69,6 +70,7 @@ class ShadowSocksR(object):
         result = ut.run(f'ssh root@{self.gateway} "uci set shadowsocksr.@global[0].global_server=\'{id}\' && uci commit shadowsocksr && /etc/init.d/shadowsocksr restart"')
         if 'Connection timed out' in result:
             raise RuntimeError(f'Failed to set current server. Message: {result}')
+        ut.I('Set current server', (id, alias))
         return result
 
 

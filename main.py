@@ -41,7 +41,7 @@ def mon():
         
         top_n = ut['top_n']
         report(df_agg.head(top_n))
-        ssr.set_server(df_agg.at[0, 'id'], df_agg.at[0, 'alias'])
+        #ssr.set_server(df_agg.at[0, 'id'], df_agg.at[0, 'alias'])
     except Exception:
         ut.ex('测试代理节点出错')
 
